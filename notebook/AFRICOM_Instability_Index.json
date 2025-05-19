@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "64e40c5f-1774-4423-8ce0-a7b9bdc23300"
+				"spark.autotune.trackingId": "6200c002-153a-471f-ab0b-1bac22af0fc8"
 			}
 		},
 		"metadata": {
@@ -115,6 +115,64 @@
 					}
 				},
 				"source": [
+					"# Packages"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Installs"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"%pip install pandas_datareader"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Imports"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\n",
+					"import numpy as np\n",
+					"import requests\n",
+					"import pandas_datareader.wb as wb\n",
+					"from notebookutils import mssparkutils\n",
+					"from pyspark.sql import SparkSession"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
 					"# Gather Data\n",
 					"\n",
 					"USAFRICOM should collect new data on an annual basis since most of these data sources are updated on that cycle.\n",
@@ -128,8 +186,245 @@
 					"| World Bank Literacy Rates [6]    | <https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true> | Socioenvironmental Pressures | Replacement for the United Nations Human Development Report -Education Index Score |\n",
 					"| Fragile State Index—Human Flight and Brain Drain score [7]    | <https://fragilestatesindex.org/indicators/e3/> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Fragile State Index—Demographic Pressures score [7]   | <https://fragilestatesindex.org/indicators/s1/> | Socioenvironmental Pressures | Annual Update |\n",
+					"\n",
+					"Table of IRI Social Cohesion Datasources\n",
 					""
 				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Socioenvironmental Pressures Domain"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### ND-Gain\n",
+					"\n",
+					"This dataset comes in a zip file containing multiple file. The required file to build the IRI is called `resources/gain/gain.csv`. After downloading the file, I renamed it to `nd_gain_country_index_2024.csv`."
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"\n",
+					"# Define the column names\n",
+					"iri_col_names = [\"iso3\", \"name\", \"year\", \"value\"]\n",
+					"\n",
+					"# Read the CSV files\n",
+					"environmental_adaptation_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/nd_gain_country_index_2024.csv'\n",
+					"african_countries_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/African_Countries_ISO3.csv'\n",
+					"environmental_adaptation = pd.read_csv(environmental_adaptation_path)\n",
+					"\n",
+					"african_countries = pd.read_csv(african_countries_path)\n",
+					"african_countries.rename(columns={'Country': 'country'}, inplace=True)\n",
+					"\n",
+					"# Filter for African countries\n",
+					"environmental_adaptation = environmental_adaptation[environmental_adaptation['ISO3'].isin(african_countries['ISO3'])]\n",
+					"\n",
+					"# Reshape the data from wide to long format\n",
+					"environmental_adaptation = environmental_adaptation.melt(\n",
+					"    id_vars=[\"ISO3\", \"Name\"],\n",
+					"    value_vars=[str(year) for year in range(1995, 2022 + 1)],\n",
+					"    var_name=\"year\",\n",
+					"    value_name=\"value\"\n",
+					")\n",
+					"\n",
+					"# Rename columns\n",
+					"environmental_adaptation.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'adaptation_score'\n",
+					"environmental_adaptation['adaptation_score'] = 2 - (2 * environmental_adaptation['value'] / 100)\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"environmental_adaptation['year'] = pd.to_numeric(environmental_adaptation['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"environmental_adaptation = environmental_adaptation[environmental_adaptation['year'] >= 2000]\n",
+					"\n",
+					"print(environmental_adaptation.head())"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Commonwealth Youth Index"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Read in json file\n",
+					"\n",
+					"url = \"https://cwapiservices.thecommonwealth.org/CountryData/GetAllYDI_index_scores\"\n",
+					"headers = {\"Accept\": \"application/json\"}\n",
+					"\n",
+					"response = requests.get(url, headers=headers)\n",
+					"data = response.json()\n",
+					"\n",
+					"\n",
+					"# Convert to DataFrame\n",
+					"youth_underdevelopment = pd.json_normalize(data)\n",
+					"\n",
+					"# Filter for African countries\n",
+					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['iD_0'].isin(african_countries['ISO3'])]\n",
+					"\n",
+					"#Select iD_0, country, year, overall_score\n",
+					"youth_underdevelopment = youth_underdevelopment[['iD_0', 'country', 'year', 'overall_score']]\n",
+					"\n",
+					"# Rename columns\n",
+					"youth_underdevelopment.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'underdevelopment_score'\n",
+					"youth_underdevelopment['underdevelopment_score'] = 2 - (2 * youth_underdevelopment['value'])\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"youth_underdevelopment['year'] = pd.to_numeric(youth_underdevelopment['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['year'] >= 2000]\n",
+					"\n",
+					"print(youth_underdevelopment.head())\n",
+					"\n",
+					""
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Illiteracy"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Read in Data\n",
+					"\n",
+					"# Define the indicator and countries (or use 'all')\n",
+					"indicator = 'SE.ADT.LITR.ZS'\n",
+					"\n",
+					"# Fetch data for all countries\n",
+					"illiteracy = wb.download(indicator=indicator, country='all', start=2000, end=2023)\n",
+					"illiteracy = illiteracy.reset_index()\n",
+					"\n",
+					"#Get ISO3 values and filter for specific African countries\n",
+					"illiteracy = pd.merge(illiteracy, african_countries, on='country', how='left')\n",
+					"illiteracy = illiteracy[illiteracy['ISO3'].isin(african_countries['ISO3'])]\n",
+					"\n",
+					"#Rename columns\n",
+					"illiteracy = illiteracy[['ISO3', 'country', 'year', indicator]]\n",
+					"illiteracy.columns = iri_col_names\n",
+					"illiteracy = illiteracy.dropna(subset=['value'])\n",
+					"illiteracy['value'] = 100 - illiteracy['value'] #want illiteracy percentage\n",
+					"\n",
+					"# Compute 'illiteracy_score'\n",
+					"illiteracy['illiteracy_score'] = 2 * illiteracy['value'] / 100\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"illiteracy['year'] = pd.to_numeric(illiteracy['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"illiteracy = illiteracy[illiteracy['year'] >= 2000]\n",
+					"\n",
+					"\n",
+					"print(illiteracy.head())\n",
+					""
+				],
+				"execution_count": 20
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Fragile State Index Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"file_list = mssparkutils.fs.ls(\"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/fsi_data\")\n",
+					"file_paths = []\n",
+					"\n",
+					"for file_path in file_list:\n",
+					"    if '.xlsx' in file_path.path:\n",
+					"        file_paths.append(file_path.path)\n",
+					"\n",
+					"\n",
+					"for path in file_paths:\n",
+					"    df = spark.read.format(\"com.crealytics.spark.excel\") \\\n",
+					"        .option(\"useHeader\", \"true\") \\\n",
+					"        .option(\"inferSchema\", \"true\") \\\n",
+					"        .load(path)\n",
+					"    dfs.append(df)\n",
+					"\n",
+					"# Union all DataFrames\n",
+					"combined_df = dfs[0]\n",
+					"for df in dfs[1:]:\n",
+					"    combined_df = combined_df.unionByName(df)\n",
+					"\n",
+					"fsi_data = combined_df.toPandas()\n",
+					"\n",
+					"print(fsi_data.head())\n",
+					""
+				],
+				"execution_count": 36
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"for path in file_paths:\n",
+					"    if '.xlsx' in path.path:\n",
+					"        print(path.path)"
+				],
+				"execution_count": 35
 			},
 			{
 				"cell_type": "markdown",
