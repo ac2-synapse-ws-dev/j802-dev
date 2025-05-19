@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"value": "ac2-synapse-ws-dev"
+		},
+		"CosmosDbNoSql1_connectionString": {
+			"value": ""
+		},
+		"CosmosGraphTest_connectionString": {
+			"value": ""
+		},
+		"EORACountryStats_accountKey": {
+			"value": ""
+		},
+		"GremlinTest_connectionString": {
+			"value": ""
+		},
+		"ac2-synapse-ws-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"value": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:ac2-synapse-ws-dev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"EORACountryStats_properties_typeProperties_url": {
+			"value": "https://ac2synapsedatalabstorage.dfs.core.windows.net/"
+		},
+		"J802Container_World_Bank_Connector_properties_typeProperties_serviceEndpoint": {
+			"value": "https://ac2synapsedatalabstorage.blob.core.windows.net/"
+		},
+		"ac2-synapse-ws-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"value": "https://ac2synapsedatalabstorage.dfs.core.windows.net"
+		}
+	}
+}
