@@ -1,0 +1,167 @@
+{
+	"name": "AFRICOM_Instability_Index",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "64e40c5f-1774-4423-8ce0-a7b9bdc23300"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### LTC Cardy Moten III, ACJ802, cardy.moten3.mil@mail.mil \n",
+					"#### 19 May 2025"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Purpose\n",
+					"\n",
+					"This notebook provides the methodology for extracting the requisite datasets to build and subsequently analyze the [AFRICOM Instability Risk Index (IRI) Assessment](https://dod365.sharepoint-mil.us/:w:/r/teams/AFRICOM-AFRICOMJ802Collaboration/Shared%20Documents/General/Campaign%20Assessment%20Literature/3-Analysis%20and%20Assessment/Risk%20Analysis/Africa%20Instability%20Risk%20Assessment_5MAY2025.docx?d=wc2e7e9be66ea4c1b9e77a30f729d54ce&csf=1&web=1&e=XXlM2m) [1]. The proponent for the use of the index and the methodology to create the index is the USAFRICOM J54."
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Index Overview\n",
+					"\n",
+					"The IRI is a composite index that is built from 30 indicators across two domains (Social Cohesion and Governance Capacity) developed by the IRI assessmeent team [1]. Each indicator is converted from its raw format to a rescaled score between 0 to 2 summarized by the table below.\n",
+					"\n",
+					"| Score | Interpretation            |\n",
+					"|-------|---------------------------|\n",
+					"| 0     | low instability risk      |\n",
+					"| 1     | moderate instability risk |\n",
+					"| 2     | high instability risk     |\n",
+					"\n",
+					"Based on this method a country can have a score ranging from 0 - 60 with lower scores representing more stability. To ensure consistency with using this index with across countries when analyzing with regards to domains across time, the scores are nomalized again to a 0 - 1 ratio value. This conversion is simply done by the following formula $$normalized\\_score = \\frac{current\\_score}{max\\_score}$$\n",
+					"\n",
+					"## Methodology Addition\n",
+					"\n",
+					"In addition to the coversion of the raw data, we will also produce estimates out to the current year of analysis since a few datasets stop their collection prior to the current year of analysis. In these cases we will employ Autoregressive Integrated Moving Average (ARIMA) estimates along with building a sample distribution using Metalogs [2] [3].\n",
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Gather Data\n",
+					"\n",
+					"USAFRICOM should collect new data on an annual basis since most of these data sources are updated on that cycle.\n",
+					"\n",
+					"## Social Cohesion Data\n",
+					"\n",
+					"| Data Source | URL | Indicator Domain | Notes |\n",
+					"|-------------|-----|------------------|-------|\n",
+					"| Notre Dame Global Adaptation Initiative (ND-GAIN) [4]    | <https://gain.nd.edu/our-work/country-index/download-data/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| The Commonwealth - Global Youth Index [5]    | <https://cwapiservices.thecommonwealth.org/index.html> | Socioenvironmental Pressures | Annual Update |\n",
+					"| World Bank Literacy Rates [6]    | <https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true> | Socioenvironmental Pressures | Replacement for the United Nations Human Development Report -Education Index Score |\n",
+					"| Fragile State Index—Human Flight and Brain Drain score [7]    | <https://fragilestatesindex.org/indicators/e3/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Fragile State Index—Demographic Pressures score [7]   | <https://fragilestatesindex.org/indicators/s1/> | Socioenvironmental Pressures | Annual Update |\n",
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"\n",
+					"### References\n",
+					"[1] USAFRICOM J54. (2025). *Africa Instability Risk Assessment*. USAFRICOM.\n",
+					"\n",
+					"[2] Wikipedia. (2025). *Autoregressive integrated moving average*. http://en.wikipedia.org/w/index.php?title=Autoregressive\\%20integrated\\%20moving\\%20average&oldid=1286449544, accessed 07 May 2025.\n",
+					"\n",
+					"[3] Wikipedia. (2025). *Metalog distribution*. http://en.wikipedia.org/w/index.php?title=Metalog\\%20distribution&oldid=1278020484, accessed 07 May 2025.\n",
+					"\n",
+					"[4] University of Notre Dame. (2025). *Notre Dame Global Adaptation Initiative Country Index (ND-GAIN)*. https://gain.nd.edu/our-work/country-index/download-data/\n",
+					"\n",
+					"[5] The Commonwealth. (2025). *Youth Development Index*. https://cwapiservices.thecommonwealth.org/index.html\n",
+					"\n",
+					"[6] World Bank. (2025). *Literacy rate, adult total (% of people ages 15 and above)*. https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true\n",
+					"\n",
+					"[7] The Fund for Peace. (2022). *Fragile State Index*. https://fragilestatesindex.org/excel/\n",
+					"\n",
+					"[8] Next Reference\n",
+					"\n",
+					""
+				]
+			}
+		]
+	}
+}
