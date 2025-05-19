@@ -1,0 +1,17 @@
+{
+	"name": "World_Bank_Indicators",
+	"properties": {
+		"content": {
+			"query": "CREATE VIEW World_Bank_Indicators_2 AS\nSELECT\n\n    [Series Name],\n    [Series Code],\n    Country,\n    [Country Code],\t\n    [Year],\n    Value\n\nFROM\n    OPENROWSET(\n        BULK 'https://ac2synapsedatalabstorage.dfs.core.windows.net/acj802/Basic_Stats_(WB_Sourced)/World_Bank_Indicators.csv',\n        FORMAT = 'CSV',\n        FIRSTROW = 2,\n        PARSER_VERSION = '2.0'\n    ) WITH (\n        [Series Name] VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        [Series Code] VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        Country VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        [Country Code] VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        [Year] INT,\n        Value VARCHAR (255) COLLATE Latin1_General_100_CI_AI_SC_UTF8\n    ) AS [result];\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "ac2j802database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "SQL script 3",
+	"properties": {
+		"content": {
+			"query": "--CREATE USER [Steven.B.Masschelin.USA@missionpartners.us] FROM EXTERNAL PROVIDER;\nALTER ROLE db_owner ADD MEMBER [Steven.B.Masschelin.USA@missionpartners.us];\n\n ",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "ac2j802database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

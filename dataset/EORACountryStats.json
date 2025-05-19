@@ -1,0 +1,118 @@
+{
+	"name": "EORACountryStats",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ac2-synapse-ws-dev-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "eora26-country-stats-2022.csv",
+				"folderPath": "Eora26_Country_Statistics",
+				"fileSystem": "acj802"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "gross-output",
+				"type": "String"
+			},
+			{
+				"name": "gross-exports-intermediate",
+				"type": "String"
+			},
+			{
+				"name": "gross-exports-final",
+				"type": "String"
+			},
+			{
+				"name": "gross-exports",
+				"type": "String"
+			},
+			{
+				"name": "gross-imports-intermediate",
+				"type": "String"
+			},
+			{
+				"name": "gross-imports-final",
+				"type": "String"
+			},
+			{
+				"name": "gross-imports",
+				"type": "String"
+			},
+			{
+				"name": "gross-trade-balance",
+				"type": "String"
+			},
+			{
+				"name": "gross-domestic-demand-intermediate",
+				"type": "String"
+			},
+			{
+				"name": "gross-domestic-demand-final",
+				"type": "String"
+			},
+			{
+				"name": "exports-domesitc-value-added",
+				"type": "String"
+			},
+			{
+				"name": "exports-foreign-value-added",
+				"type": "String"
+			},
+			{
+				"name": "exports-used-for-export-production",
+				"type": "String"
+			},
+			{
+				"name": "value-added-exports",
+				"type": "String"
+			},
+			{
+				"name": "foreign-value-added-domestic-demand",
+				"type": "String"
+			},
+			{
+				"name": "export-value-added-one",
+				"type": "String"
+			},
+			{
+				"name": "export-value-added-two",
+				"type": "String"
+			},
+			{
+				"name": "export-value-added-three",
+				"type": "String"
+			},
+			{
+				"name": "domestic-value-added-four",
+				"type": "String"
+			},
+			{
+				"name": "domestic-value-added-five",
+				"type": "String"
+			},
+			{
+				"name": "domestic-value-added-six",
+				"type": "String"
+			},
+			{
+				"name": "gross-value-added",
+				"type": "String"
+			},
+			{
+				"name": "gross-derived-value-added",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

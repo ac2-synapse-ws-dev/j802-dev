@@ -1,0 +1,426 @@
+{
+	"name": "DelimitedText1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "J802Container_World_Bank_Connector",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "World_Bank_Indicators_Unpivoted.csv",
+				"folderPath": "Basic_Stats_(WB_Sourced)",
+				"container": "acj802"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Country Name",
+				"type": "String"
+			},
+			{
+				"name": "Country Code",
+				"type": "String"
+			},
+			{
+				"name": "Year",
+				"type": "String"
+			},
+			{
+				"name": "Age dependency ratio (% of working-age population)",
+				"type": "String"
+			},
+			{
+				"name": "Agricultural land (% of land area)",
+				"type": "String"
+			},
+			{
+				"name": "Agricultural land (sq. km)",
+				"type": "String"
+			},
+			{
+				"name": "Agriculture, forestry, and fishing, value added (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Agriculture, forestry, and fishing, value added (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Arable land (% of land area)",
+				"type": "String"
+			},
+			{
+				"name": "Arable land (hectares)",
+				"type": "String"
+			},
+			{
+				"name": "Arms exports (SIPRI trend indicator values)",
+				"type": "String"
+			},
+			{
+				"name": "Arms imports (SIPRI trend indicator values)",
+				"type": "String"
+			},
+			{
+				"name": "Battle-related deaths (number of people)",
+				"type": "String"
+			},
+			{
+				"name": "Birth rate, crude (per 1,000 people)",
+				"type": "String"
+			},
+			{
+				"name": "Chemicals (% of value added in manufacturing)",
+				"type": "String"
+			},
+			{
+				"name": "Container port traffic (TEU: 20 foot equivalent units)",
+				"type": "String"
+			},
+			{
+				"name": "Current health expenditure (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Current health expenditure per capita (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Death rate, crude (per 1,000 people)",
+				"type": "String"
+			},
+			{
+				"name": "Electric power consumption (kWh per capita)",
+				"type": "String"
+			},
+			{
+				"name": "Energy imports, net (% of energy use)",
+				"type": "String"
+			},
+			{
+				"name": "Energy use (kg of oil equivalent per capita)",
+				"type": "String"
+			},
+			{
+				"name": "Exports of goods and services (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "External debt stocks (% of GNI)",
+				"type": "String"
+			},
+			{
+				"name": "External debt stocks, total (DOD, current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Fertility rate, total (births per woman)",
+				"type": "String"
+			},
+			{
+				"name": "Food, beverages and tobacco (% of value added in manufacturing)",
+				"type": "String"
+			},
+			{
+				"name": "Foreign direct investment, net (BoP, current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Foreign direct investment, net inflows (BoP, current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Forest area (% of land area)",
+				"type": "String"
+			},
+			{
+				"name": "Forest area (sq. km)",
+				"type": "String"
+			},
+			{
+				"name": "GDP (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "GDP growth (annual %)",
+				"type": "String"
+			},
+			{
+				"name": "GDP per capita (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "GDP per capita, PPP (current international $)",
+				"type": "String"
+			},
+			{
+				"name": "GDP, PPP (current international $)",
+				"type": "String"
+			},
+			{
+				"name": "GNI per capita, Atlas method (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "GNI per capita, PPP (current international $)",
+				"type": "String"
+			},
+			{
+				"name": "GNI, Atlas method (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "GNI, PPP (current international $)",
+				"type": "String"
+			},
+			{
+				"name": "Gini index",
+				"type": "String"
+			},
+			{
+				"name": "Gross capital formation (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Gross value added at basic prices (GVA) (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "High-technology exports (% of manufactured exports)",
+				"type": "String"
+			},
+			{
+				"name": "Imports of goods and services (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Income share held by lowest 20%",
+				"type": "String"
+			},
+			{
+				"name": "Individuals using the Internet (% of population)",
+				"type": "String"
+			},
+			{
+				"name": "Industry (including construction), value added (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Industry (including construction), value added (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Inflation, GDP deflator (annual %)",
+				"type": "String"
+			},
+			{
+				"name": "Inflation, consumer prices (annual %)",
+				"type": "String"
+			},
+			{
+				"name": "Interest payments (% of revenue)",
+				"type": "String"
+			},
+			{
+				"name": "Internally displaced persons, new displacement associated with disasters (number of cases)",
+				"type": "String"
+			},
+			{
+				"name": "International migrant stock (% of population)",
+				"type": "String"
+			},
+			{
+				"name": "Labor force, total",
+				"type": "String"
+			},
+			{
+				"name": "Land area (sq. km)",
+				"type": "String"
+			},
+			{
+				"name": "Life expectancy at birth, total (years)",
+				"type": "String"
+			},
+			{
+				"name": "Literacy rate, adult total (% of people ages 15 and above)",
+				"type": "String"
+			},
+			{
+				"name": "Manufacturing, value added (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Manufacturing, value added (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Market capitalization of listed domestic companies (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Merchandise trade (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Military expenditure (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Military expenditure (current USD)",
+				"type": "String"
+			},
+			{
+				"name": "Mobile cellular subscriptions (per 100 people)",
+				"type": "String"
+			},
+			{
+				"name": "Mortality rate, under-5 (per 1,000 live births)",
+				"type": "String"
+			},
+			{
+				"name": "Net ODA received per capita (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Net migration",
+				"type": "String"
+			},
+			{
+				"name": "PM2.5 air pollution, population exposed to levels exceeding WHO guideline value (% of total)",
+				"type": "String"
+			},
+			{
+				"name": "Personal remittances, paid (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Personal remittances, received (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Population growth (annual %)",
+				"type": "String"
+			},
+			{
+				"name": "Population, female",
+				"type": "String"
+			},
+			{
+				"name": "Population, female (% of total population)",
+				"type": "String"
+			},
+			{
+				"name": "Population, male",
+				"type": "String"
+			},
+			{
+				"name": "Population, male (% of total population)",
+				"type": "String"
+			},
+			{
+				"name": "Population, total",
+				"type": "String"
+			},
+			{
+				"name": "Poverty headcount ratio at national poverty lines (% of population)",
+				"type": "String"
+			},
+			{
+				"name": "Prevalence of HIV, total (% of population ages 15-49)",
+				"type": "String"
+			},
+			{
+				"name": "Primary completion rate, total (% of relevant age group)",
+				"type": "String"
+			},
+			{
+				"name": "Rail lines (total route-km)",
+				"type": "String"
+			},
+			{
+				"name": "Railways, goods transported (million ton-km)",
+				"type": "String"
+			},
+			{
+				"name": "Railways, passengers carried (million passenger-km)",
+				"type": "String"
+			},
+			{
+				"name": "Revenue, excluding grants (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "School enrollment, primary and secondary (gross), gender parity index (GPI)",
+				"type": "String"
+			},
+			{
+				"name": "School enrollment, secondary (% gross)",
+				"type": "String"
+			},
+			{
+				"name": "School enrollment, tertiary (% gross)",
+				"type": "String"
+			},
+			{
+				"name": "Services, value added (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Services, value added (current US$)",
+				"type": "String"
+			},
+			{
+				"name": "Start-up procedures to register a business (number)",
+				"type": "String"
+			},
+			{
+				"name": "Stocks traded, total value (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Surface area (sq. km)",
+				"type": "String"
+			},
+			{
+				"name": "Survival to age 65, female (% of cohort)",
+				"type": "String"
+			},
+			{
+				"name": "Survival to age 65, male (% of cohort)",
+				"type": "String"
+			},
+			{
+				"name": "Tax revenue (% of GDP)",
+				"type": "String"
+			},
+			{
+				"name": "Taxes on exports (% of tax revenue)",
+				"type": "String"
+			},
+			{
+				"name": "Total debt service (% of GNI)",
+				"type": "String"
+			},
+			{
+				"name": "Unemployment, total (% of total labor force) (national estimate)",
+				"type": "String"
+			},
+			{
+				"name": "Urban population (% of total population)",
+				"type": "String"
+			},
+			{
+				"name": "Water productivity, total (constant 2015 US$ GDP per cubic meter of total freshwater withdrawal)",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

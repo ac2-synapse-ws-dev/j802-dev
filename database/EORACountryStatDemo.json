@@ -1,0 +1,25 @@
+{
+	"name": "EORACountryStatDemo",
+	"properties": {
+		"Name": "EORACountryStatDemo",
+		"EntityType": "DATABASE",
+		"Origin": {
+			"Type": "SPARK"
+		},
+		"Properties": {
+			"IsSyMSCDMDatabase": true
+		},
+		"Source": {
+			"Provider": "ADLS",
+			"Location": "abfss://ac2synapsefiles01@ac2synapsedatalabstorage.dfs.core.windows.net/EORACountryStatDemo",
+			"Properties": {
+				"FormatType": "csv",
+				"LinkedServiceName": "ac2-synapse-ws-dev-WorkspaceDefaultStorage"
+			}
+		},
+		"PublishStatus": "PUBLISHED",
+		"ObjectVersion": 2,
+		"ObjectId": "7285fe6a-b1c2-47c4-8453-315732d4fff9"
+	},
+	"type": "DATABASE"
+}

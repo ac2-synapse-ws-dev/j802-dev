@@ -1,0 +1,431 @@
+{
+	"name": "UNCOMTRADE_Querry_Example",
+	"properties": {
+		"description": "connection to comtrade",
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "60067717-4613-4913-a2d0-9cfd0d12e3e2"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Hasbrouck 3oct24 copy code provided by UN COM Trade "
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(\"Wakey Wakey\")"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Install a pip comtradeapicall package in the current Jupyter kernel\r\n",
+					"import sys\r\n",
+					"!{sys.executable} -m pip install --upgrade comtradeapicall"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pandas\r\n",
+					"import requests\r\n",
+					"import comtradeapicall"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"subscription_key = '<YOUR KEY>' # comtrade api subscription key (from comtradedeveloper.un.org)\r\n",
+					"directory = '<OUTPUT DIR>'  # output directory for downloaded files \r\n",
+					"proxy_url = '<PROXY URL>'  # optional if you need proxy url"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#set some variables\r\n",
+					"from datetime import date\r\n",
+					"from datetime import timedelta\r\n",
+					"today = date.today()\r\n",
+					"yesterday = today - timedelta(days=1)\r\n",
+					"lastweek = today - timedelta(days=7)"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					" Call preview final data API to a data frame, max to 500 records, no subscription key required\r\n",
+					" \r\n",
+					" This example: Australia imports of commodity code 91 in classic mode in May 2022"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mydf = comtradeapicall.previewFinalData(typeCode='C', freqCode='M', clCode='HS', period='202205',\r\n",
+					"                                        reporterCode='36', cmdCode='36', flowCode='M', partnerCode=None,\r\n",
+					"                                        partner2Code=None,\r\n",
+					"                                        customsCode=None, motCode=None, maxRecords=500, format_output='JSON',\r\n",
+					"                                        aggregateBy=None, breakdownMode='classic', countOnly=None, includeDesc=True)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mydf.head(5)"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"-------------------------- End Example ---------------------------------------------"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Libya Example\r\n",
+					"\r\n",
+					"*NOTE: MAX Querry 500 rows without subscription*"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Links\r\n",
+					"- [UNCOMTRADE REF TABLES](https://comtradeplus.un.org/ListOfReferences)\r\n",
+					"- [UNCOMTRADEAPI](https://comtradedeveloper.un.org/signin?returnUrl=%2F)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import pandas as pd\r\n",
+					"### reset  pandas data frame to see all columns on df return\r\n",
+					"pd.set_option('display.max_columns', None)\r\n",
+					"pd.set_option('display.expand_frame_repr', False)\r\n",
+					"pd.set_option('max_colwidth', None)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"help(comtradeapicall.previewFinalData)"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Selection Criteria\r\n",
+					"- typeCode(str) : Product type. Goods (C) or Services (S)\r\n",
+					"- freqCode(str) : The time interval at which observations occur. Annual (A) or Monthly (M)\r\n",
+					"- clCode(str) : Indicates the product classification used and which version (HS, SITC)\r\n",
+					"- period(str) : Combination of year and month (for monthly), year for (annual)\r\n",
+					"- reporterCode(str) : The country or geographic area to which the measured statistical phenomenon relates\r\n",
+					"- cmdCode(str) : Product code in conjunction with classification code\r\n",
+					"- flowCode(str) : Trade flow or sub-flow (exports, re-exports, imports, re-imports, etc.)\r\n",
+					"- partnerCode(str) : The primary partner country or geographic area for the respective trade flow\r\n",
+					"- partner2Code(str) : A secondary partner country or geographic area for the respective trade flow\r\n",
+					"- customsCode(str) : Customs or statistical procedure\r\n",
+					"- motCode(str) : The mode of transport used when goods enter or leave the economic territory of a country\r\n",
+					"### Query Options\r\n",
+					"- maxRecords(int) : Limit number of returned records\r\n",
+					"- format_output(str) : The output format. CSV or JSON\r\n",
+					"- aggregateBy(str) : Option for aggregating the query\r\n",
+					"- breakdownMode(str) : Option to select the classic (trade by partner/product) or plus (extended breakdown) mode\r\n",
+					"- countOnly(bool) : Return the actual number of records if set to True\r\n",
+					"- includeDesc(bool) : Option to include the description or not\r\n",
+					"### AIS Selection Criteria\r\n",
+					"- typeCode(str) : Product type. Only Goods (C)\r\n",
+					"- freqCode(str) : The time interval at which observations occur. Daily (D)\r\n",
+					"- datefrom(str) and dateto(str) : Date(s) of observation - ASCII format\r\n",
+					"- countryareaCode(str) : The country or geographic area to which the measured statistical phenomenon relates. Use getReference('ais:countriesareas') for the complete list.\r\n",
+					"- vesselTypeCode(str) : The high level categorization of vessels transporting the goods. Use getReference('ais:vesseltypes') for the complete list.\r\n",
+					"- flowCode(str) : Trade flow (exports, imports)\r\n",
+					"### Proxy Server\r\n",
+					"- proxy_url(str) : All functions that call the API support the proxy server. Use the parameter proxy_url.\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"typeCode = 'C' ### C == Good M == Service None== Everything\r\n",
+					"freqCode = 'A'  #### A== Annual M == Monthly\r\n",
+					"clCode = 'HS'  ### Use HS\r\n",
+					"period = '2022'  ### YYYY or YYYYMM must change Frequency code\r\n",
+					"reporterCode = None     #36 = Australia 842 USA 434=Lybia None== Any... TIP Use None for non-un or ureliable Countries (Lybia or Russia...)\r\n",
+					"cmdCode = None  ### The comodity code or set of comoditiy codes from the HS set in the comp trade ref tables\r\n",
+					"flowCode = None ###  None = all there are 12 codes in total  see ref tables (Import Export Rexport... etc) \r\n",
+					"partnerCode = '434'  ## Libya Primary Trade Flow -- Code of interest....\r\n",
+					"partner2Code = None ## Regional secondary flow??? Set to to none ...\r\n",
+					"customsCode = None  ### Catagorical Variable - 16 cats for tarrif purposes?\r\n",
+					"motCode = None #### Mode of transportation \r\n",
+					"maxRecords = 500  ### This is the max for a free account\r\n",
+					"format_output = 'JSON'   \r\n",
+					"aggregateBy = 'cmdCode'  # aggregates on a vector.  cmdCode to match the GUI output\r\n",
+					"breakdownMode = 'classic' ### classic and Plus.  Plus consolidates some of the data not sure why.\r\n",
+					"countOnly = False ### counts the number of records  use to understand if you exceed the 500 limit\r\n",
+					"includeDesc = True  #FALSE Removes all desc variables effectively make the data much smaller buy you need the ref tables to understand the cat vars.\r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"mydf = comtradeapicall.previewFinalData(typeCode=typeCode, freqCode=freqCode, clCode=clCode, period=period,\r\n",
+					"                                        reporterCode=reporterCode, cmdCode=cmdCode, flowCode=flowCode, partnerCode=partnerCode,\r\n",
+					"                                        partner2Code=partner2Code,\r\n",
+					"                                        customsCode=customsCode, motCode=motCode, maxRecords=maxRecords, format_output=format_output,\r\n",
+					"                                        aggregateBy=aggregateBy, breakdownMode=breakdownMode, countOnly=countOnly, includeDesc=includeDesc)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					},
+					"tags": [
+						"parameters"
+					]
+				},
+				"source": [
+					"mydf"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"help(comtradeapicall)"
+				]
+			}
+		]
+	}
+}

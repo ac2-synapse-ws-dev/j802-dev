@@ -1,0 +1,117 @@
+{
+	"name": "AfroBarometer_Survey_Socumentation",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "9c587dad-e470-44ce-aba9-6ee4b1d8104b"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"print (\"Initiate\")"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import requests\r\n",
+					"from bs4 import BeautifulSoup\r\n",
+					"\r\n",
+					"base_url = \"https://www.afrobarometer.org/data/codebooks/?current-page=\"\r\n",
+					"urls = []\r\n",
+					"\r\n",
+					"for page in range(1, 28):\r\n",
+					"    url = f\"{base_url}{page}\"\r\n",
+					"    response = requests.get(url)\r\n",
+					"    soup = BeautifulSoup(response.content, 'html.parser')\r\n",
+					"    for link in soup.find_all('a', href=True):\r\n",
+					"        if \"round\" in link['href'].lower():\r\n",
+					"            urls.append(link['href'])\r\n",
+					"\r\n",
+					"print(urls)"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import requests\r\n",
+					"\r\n",
+					"url = \"https://www.afrobarometer.org/survey-resource/tunisia-round-9-codebook-2022/\"\r\n",
+					"response = requests.get(url)\r\n",
+					"\r\n",
+					"# Save the content to a file\r\n",
+					"with open(\"Tunisia_Round_9_Codebook_2022.pdf\", \"wb\") as file:\r\n",
+					"    file.write(response.content)\r\n",
+					"\r\n",
+					"print(\"Download complete\")"
+				],
+				"execution_count": 4
+			}
+		]
+	}
+}

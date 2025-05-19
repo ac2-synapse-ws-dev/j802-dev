@@ -1,0 +1,17 @@
+{
+	"name": "EORA_Value_Add",
+	"properties": {
+		"content": {
+			"query": "CREATE VIEW EORA_ValueAdd AS\nSELECT\n\n    Importer,\n    Exporter,\n    Sector,\n    [Year],\t\n    [Value Added],\n    [Sender Input to Receiver]\n\nFROM\n    OPENROWSET(\n        BULK 'https://ac2synapsedatalabstorage.dfs.core.windows.net/acj802/EORA26/LBY_ValueAdd_1990_2022.csv',\n        FORMAT = 'CSV',\n        FIRSTROW = 2,\n        PARSER_VERSION = '2.0'\n    ) WITH (\n        Importer VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        Exporter VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        Sector VARCHAR(255) COLLATE Latin1_General_100_CI_AI_SC_UTF8,\n        [Year] INT,\n        [Value Added] FLOAT,\n        [Sender Input to Receiver] FLOAT\n    ) AS [result];\nGO",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "ac2j802database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

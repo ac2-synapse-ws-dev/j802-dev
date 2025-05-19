@@ -1,0 +1,356 @@
+{
+	"name": "EORACountryRawToParquet",
+	"properties": {
+		"activities": [
+			{
+				"name": "TransformRawData",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"name": "year",
+									"type": "Int32",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "year",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_output",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_output",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_exports_intermediate",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_exports_intermediate",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_exports_final",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_exports_final",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_exports",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_exports",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_imports_intermediate",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_imports_intermediate",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_imports_final",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_imports_final",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_imports",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_imports",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_trade_balance",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_trade_balance",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_domestic_demand_intermediate",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_domestic_demand_intermediate",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_domestic_demand_final",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_domestic_demand_final",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "exports_domesitc_value_added",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "exports_domesitc_value_added",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "exports_foreign_value_added",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "exports_foreign_value_added",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "exports_used_for_export_production",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "exports_used_for_export_production",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "value_added_exports",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "value_added_exports",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "foreign_value_added_domestic_demand",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "foreign_value_added_domestic_demand",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "export_value_added_one",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "export_value_added_one",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "export_value_added_two",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "export_value_added_two",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "export_value_added_three",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "export_value_added_three",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "domestic_value_added_four",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "domestic_value_added_four",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "domestic_value_added_five",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "domestic_value_added_five",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "domestic_value_added_six",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "domestic_value_added_six",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_value_added",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_value_added",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							},
+							{
+								"source": {
+									"name": "gross_derived_value_added",
+									"type": "Decimal",
+									"physicalType": "String"
+								},
+								"sink": {
+									"name": "gross_derived_value_added",
+									"type": "String",
+									"physicalType": "UTF8"
+								}
+							}
+						],
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "EORACountryStats",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "EORACountryStats2022Parquet",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-11-01T14:56:21Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

@@ -1,0 +1,10 @@
+{
+	"name": "synapse-ws-custstgacct--ac2-synapse-ws-dev-ac2synapsedatalabstorage",
+	"properties": {
+		"privateLinkResourceId": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Storage/storageAccounts/ac2synapsedatalabstorage",
+		"groupId": "dfs",
+		"fqdns": [
+			"ac2synapsedatalabstorage.dfs.core.windows.net"
+		]
+	}
+}

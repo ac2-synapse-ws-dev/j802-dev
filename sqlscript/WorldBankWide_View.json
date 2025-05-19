@@ -1,0 +1,17 @@
+{
+	"name": "WorldBankWide_View",
+	"properties": {
+		"content": {
+			"query": "DECLARE @cols AS NVARCHAR(MAX),\n        @query AS NVARCHAR(MAX);\n\n-- Get the distinct series codes\nSELECT @cols = STRING_AGG(QUOTENAME([Series Code]), ',') \n               FROM (SELECT DISTINCT [Series Code] FROM World_Bank_Indicators) AS SeriesCodes;\n\n-- Construct the dynamic SQL query\nSET @query = '\nSELECT \n    Country,\n    [Country Code],\n    Year,\n    ' + @cols + '\nFROM \n    (SELECT \n        Country, \n        [Country Code], \n        Year, \n        [Series Code], \n        Value\n     FROM \n        World_Bank_Indicators) AS SourceTable\nPIVOT\n(\n    MAX(Value)\n    FOR [Series Code] IN (' + @cols + ')\n) AS PivotTable';\n\n-- Execute the dynamic SQL query\nEXEC sp_executesql @query;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "ac2j802database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

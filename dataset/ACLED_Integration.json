@@ -1,0 +1,21 @@
+{
+	"name": "ACLED_Integration",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "EORACountryStats",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "ACLED_2023-07-01-2023-12-31.csv",
+				"fileSystem": "acj802"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

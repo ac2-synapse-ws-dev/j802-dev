@@ -1,0 +1,17 @@
+{
+	"name": "ACLED_View",
+	"properties": {
+		"content": {
+			"query": "CREATE VIEW ACLED_Trial AS\nSELECT\n    event_id_cnty,\n    CONVERT(DATE, event_date, 113) AS event_date,\n    year,\n    time_precision,\n    disorder_type,\n    event_type,\n    sub_event_type,\n    actor1,\n    assoc_actor_1,\n    inter1,\n    actor2,\n    assoc_actor_2,\n    inter2,\n    interaction,\n    civilian_targeting,\n    iso,\n    region,\n    country,\n    admin1,\n    admin2,\n    admin3,\n    location,\n    latitude,\n    longitude,\n    geo_precision,\n    source,\n    source_scale,\n    fatalities,\n    notes,\n    tags,\n    timestamp\n\nFROM\n    OPENROWSET(\n        BULK 'https://ac2synapsedatalabstorage.dfs.core.windows.net/acj802/ACLED_2023-07-01-2023-12-31.csv',\n        FORMAT = 'CSV',\n        FIRSTROW = 2,\n        PARSER_VERSION = '2.0'\n    ) WITH (\n        event_id_cnty VARCHAR(255),\n        event_date VARCHAR(8000),\n        year INT,\n        time_precision INT,\n        disorder_type VARCHAR(255),\n        event_type VARCHAR(255),\n        sub_event_type VARCHAR(255),\n        actor1 VARCHAR(255),\n        assoc_actor_1 VARCHAR(8000),\n        inter1 INT,\n        actor2 VARCHAR(255),\n        assoc_actor_2 VARCHAR(8000),\n        inter2 INT,\n        interaction INT,\n        civilian_targeting VARCHAR(255),\n        iso INT,\n        region VARCHAR(255),\n        country VARCHAR(255),\n        admin1 VARCHAR(255),\n        admin2 VARCHAR(255),\n        admin3 VARCHAR(255),\n        location VARCHAR(255),\n        latitude FLOAT,\n        longitude FLOAT,\n        geo_precision INT,\n        source VARCHAR(8000),\n        source_scale VARCHAR(255),\n        notes VARCHAR(8000),\n        fatalities INT,\n        tags VARCHAR(255),\n        timestamp VARCHAR(8000)\n    ) AS [result];\nGO\n",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "master",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

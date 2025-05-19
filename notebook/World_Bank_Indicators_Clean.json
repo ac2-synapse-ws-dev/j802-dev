@@ -1,0 +1,69 @@
+{
+	"name": "World_Bank_Indicators_Clean",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "6b299932-8abf-4376-a964-05c0b02272c7"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\r\n",
+					"\r\n",
+					"# Load the CSV file\r\n",
+					"df = pd.read_csv('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Basic_Stats_(WB_Sourced)/World_Bank_Indicators_Unpivoted.csv')\r\n",
+					"\r\n",
+					"# Convert columns with scientific notation to standard numeric format\r\n",
+					"columns_to_convert = ['Age_dependency_ratio_Percent_of_working_age_population','Agricultural_land_Percent_of_land_area','Agricultural_land_sq_km','Agriculture_forestry_and_fishing_value_added_Percent_of_GDP','Agriculture_forestry_and_fishing_value_added_current_USD','Arable_land_Percent_of_land_area','Arable_land_hectares','Arms_exports_SIPRI_trend_indicator_values','Arms_imports_SIPRI_trend_indicator_values','Battle_related_deaths_number_of_people','Birth_rate_crude_per_1000_people','Chemicals_Percent_of_value_added_in_manufacturing','Container_port_traffic_TEU_20_foot_equivalent_units','Current_health_expenditure_Percent_of_GDP','Current_health_expenditure_per_capita_current_USD','Death_rate_crude_per_1000_people','Electric_power_consumption_kWh_per_capita','Energy_imports_net_Percent_of_energy_use','Energy_use_kg_of_oil_equivalent_per_capita','Exports_of_goods_and_services_Percent_of_GDP','External_debt_stocks_Percent_of_GNI','External_debt_stocks_total_DOD_current_USD','Fertility_rate_total_births_per_woman','Food_beverages_and_tobacco_Percent_of_value_added_in_manufacturing','Foreign_direct_investment_net_BoP_current_USD','Foreign_direct_investment_net_inflows_BoP_current_USD','Forest_area_Percent_of_land_area','Forest_area_sq_km','GDP_current_USD','GDP_growth_annual_Percent','GDP_per_capita_current_USD','GDP_per_capita_PPP_current_international_dollar','GDP_PPP_current_international_dollar','GNI_per_capita_Atlas_method_current_USD','GNI_per_capita_PPP_current_international_dollar','GNI_Atlas_method_current_USD','GNI_PPP_current_international_dollar','Gini_index','Gross_capital_formation_Percent_of_GDP','Gross_value_added_at_basic_prices_GVA_current_USD','High_technology_exports_Percent_of_manufactured_exports','Imports_of_goods_and_services_Percent_of_GDP','Income_share_held_by_lowest_20Percent','Individuals_using_the_Internet_Percent_of_population','Industry_including_construction_value_added_Percent_of_GDP','Industry_including_construction_value_added_current_USD','Inflation_GDP_deflator_annual_Percent','Inflation_consumer_prices_annual_Percent','Interest_payments_Percent_of_revenue','Internally_displaced_persons_new_displacement_associated_with_disasters_number_of_cases','International_migrant_stock_Percent_of_population','Labor_force_total','Land_area_sq_km','Life_expectancy_at_birth_total_years','Literacy_rate_adult_total_Percent_of_people_ages_15_and_above','Manufacturing_value_added_Percent_of_GDP','Manufacturing_value_added_current_USD','Market_capitalization_of_listed_domestic_companies_Percent_of_GDP','Merchandise_trade_Percent_of_GDP','Military_expenditure_Percent_of_GDP','Military_expenditure_current_USD','Mobile_cellular_subscriptions_per_100_people','Mortality_rate_under_5_per_1000_live_births','Net_ODA_received_per_capita_current_USD','Net_migration','PM2decimal5_air_pollution_population_exposed_to_levels_exceeding_WHO_guideline_value_Percent_of_total','Personal_remittances_paid_current_USD','Personal_remittances_received_Percent_of_GDP','Population_growth_annual_Percent','Population_female','Population_female_Percent_of_total_population','Population_male','Population_male_Percent_of_total_population','Population_total','Poverty_headcount_ratio_at_national_poverty_lines_Percent_of_population','Prevalence_of_HIV_total_Percent_of_population_ages_15_49','Primary_completion_rate_total_Percent_of_relevant_age_group','Rail_lines_total_route_km','Railways_goods_transported_million_ton_km','Railways_passengers_carried_million_passenger_km','Revenue_excluding_grants_Percent_of_GDP','School_enrollment_primary_and_secondary_gross_gender_parity_index_GPI','School_enrollment_secondary_Percent_gross','School_enrollment_tertiary_Percent_gross','Services_value_added_Percent_of_GDP','Services_value_added_current_USD','Start_up_procedures_to_register_a_business_number','Stocks_traded_total_value_Percent_of_GDP','Surface_area_sq_km','Survival_to_age_65_female_Percent_of_cohort','Survival_to_age_65_male_Percent_of_cohort','Tax_revenue_Percent_of_GDP','Taxes_on_exports_Percent_of_tax_revenue','Total_debt_service_Percent_of_GNI','Unemployment_total_Percent_of_total_labor_force_national_estimate','Urban_population_Percent_of_total_population','Water_productivity_total_constant_2015_USD_GDP_per_cubic_meter_of_total_freshwater_withdrawal']\r\n",
+					"for column in columns_to_convert:\r\n",
+					"    df[column] = df[column].apply(lambda x: '{:.15f}'.format(float(x)) if pd.notnull(x) else x)\r\n",
+					"\r\n",
+					"# Save the cleaned data back to a CSV file\r\n",
+					"df.to_csv('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Basic_Stats_(WB_Sourced)/World_Bank_Indicators_Unpivoted_cleaned.csv', index=False)"
+				],
+				"execution_count": 11
+			}
+		]
+	}
+}

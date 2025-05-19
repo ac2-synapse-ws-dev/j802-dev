@@ -1,0 +1,1414 @@
+{
+	"name": "EORA_TiVA",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "4aa3b760-25c6-415d-9bbb-764756c9c4f7"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"import numpy as np\n",
+					"from scipy.linalg import block_diag\n",
+					"import warnings\n",
+					"import pandas as pd\n",
+					"import io"
+				],
+				"execution_count": 265
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Parameters"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"num_cntry = 189\r\n",
+					"num_sectors = 26\r\n",
+					"num_fd_components = 6"
+				],
+				"execution_count": 208
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Define the Intermediate Use and Final Demand Sections of Matrix\r\n",
+					"Create global bilateral gross trade matrices by exporting industry/country (y_dim, rows) and importing industry/country (x_dim, cols) for intermediate (INT) or final (FNL) goods. \r\n",
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Read in the data\r\n",
+					"Final Demand Matrix  {name: fd_matrix, shape: ((num_cntry * num_sectors) + 1), ((num_cntry * num_sectors) + num_fd_components)}\r\n",
+					"\r\n",
+					"Intermediate Use Matrix  {name: id_matrix, shape: ((num_cntry * num_sectors) + 1), ((num_cntry * num_sectors) + 1)}\r\n",
+					"\r\n",
+					"Value Added Matrix {name: va_matrix, shape: num_fd_components, ((num_cntry * num_sectors) + 1)}"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"fd_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_FD.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"id_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_T.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"va_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_VA.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)"
+				],
+				"execution_count": 209
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"va_total_cs = va_matrix.sum(axis = 0)"
+				],
+				"execution_count": 210
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Sum over all 6 components of the final demand matrix for each country final shape should be [(num_cntry*num_sectors) x num_cntry]"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"FD = fd_matrix.reshape((num_cntry*num_sectors + 1), num_fd_components, _1)\r\n",
+					"FD = FD.sum(axis=1)\r\n",
+					"FD = np.squeeze(FD) # Squeeze to remove single_dimensional entries"
+				],
+				"execution_count": 211
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Drop the final statistical discrepancy row/column from matrix (aka Rest of World)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"GRTR_INT_cs_cs = id_matrix[0:(num_cntry*num_sectors), 0:(num_cntry*num_sectors)]\n",
+					"GRTR_FNL_cs_c = FD[0:num_cntry*num_sectors,0:num_cntry]\n",
+					"VALUE_cs = va_total_cs[0:(num_cntry*num_sectors)]"
+				],
+				"execution_count": 212
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Identity matrices for summing across sectors (when calculating totals by country)\n",
+					"\n",
+					"imtx_cs_c _ a block diagonal matrix with blocks of ones (num_sectors, 1) on the diagonal\n",
+					"\n",
+					"imtx_cs_cs _ a block diagonal matrix with blocks of ones (num_sectors, num_sectors) on the diagonal\n",
+					"\n",
+					"imtx_c_cs _ a block diagonal matrix with blocks of ones (1, num_sectors) on the diagonal\n",
+					"\n",
+					"imtx_cs_ck _ a block diagonal matrix with blocks of ones (num_sectors, num_fd_components) on the diagonal\n",
+					"\n",
+					"imtx_c_c _ identity matrix with shape of (num_cntry, num_cntry)\n",
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Initialize empty list to hold blocks\n",
+					"imtx_cs_c = []\n",
+					"imtx_cs_cs = []\n",
+					"imtx_c_cs=[]\n",
+					"imtx_cs_ck = []\n",
+					"\n",
+					"# Create block matrix\n",
+					"iblk_cs_c = np.ones((num_sectors, 1))  # Create num_sectors x 1 vector of ones\n",
+					"iblk_cs_cs = np.ones((num_sectors,num_sectors))\n",
+					"ivector = np.ones((1, num_sectors))\n",
+					"iblk_cs_ck = np.ones((num_sectors, num_fd_components))\n",
+					"\n",
+					"# Construct block diagonal matrix\n",
+					"for i in range(num_cntry):\n",
+					"    if i == 0:\n",
+					"        imtx_cs_c = iblk_cs_c  # Initialize with the first block\n",
+					"        imtx_cs_cs = iblk_cs_cs\n",
+					"        imtx_c_cs = ivector\n",
+					"        imtx_cs_ck = iblk_cs_ck\n",
+					"\n",
+					"    else:\n",
+					"        imtx_cs_c = block_diag(imtx_cs_c, iblk_cs_c) \n",
+					"        imtx_cs_cs = block_diag(imtx_cs_cs, iblk_cs_cs) \n",
+					"        imtx_c_cs = block_diag(imtx_c_cs, ivector)\n",
+					"        imtx_cs_ck = block_diag(imtx_cs_ck, iblk_cs_ck)\n",
+					"\n",
+					"\n",
+					"imtx_c_c = np.eye(num_cntry)\n",
+					"\n",
+					""
+				],
+				"execution_count": 213
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Calculating Gross Output (GO)\r\n",
+					"\r\n",
+					"Sum across all num_sectors sectors by country for intermediate demand and then add total final demand. This step assumes the statistical discrepancy rows and columns were removed."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"GO_cs_c = GRTR_INT_cs_cs.reshape(num_cntry*num_sectors, num_sectors, _1)\r\n",
+					"GO_cs_c = GO_cs_c.sum(axis = 1)\r\n",
+					"GO_cs_c = np.squeeze(GO_cs_c)\r\n",
+					"GO_cs_c = GO_cs_c + GRTR_FNL_cs_c\r\n",
+					"GO_cs = GO_cs_c.sum(axis = 1)"
+				],
+				"execution_count": 214
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Aggregate grouss output matrix across sectors [num_cntry x num_cntry]"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"GO_c_c = np.matmul(imtx_c_cs,GO_cs_c)"
+				],
+				"execution_count": 215
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Total gross output for each country_sector [num_cntry * num_sectors x 1], summed across columns"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Step 1: Replicate GO_cs\r\n",
+					"replicated_GO_cs = np.tile(GO_cs[:, np.newaxis],(1,num_cntry))\r\n",
+					"\r\n",
+					"# Step 2: Element_wise multiply\r\n",
+					"elementwise_GO_product =  replicated_GO_cs * imtx_cs_c\r\n",
+					"\r\n",
+					"# Step 3: Sum along the specified axis (axis=0)\r\n",
+					"summed_GO_result = elementwise_GO_product.sum(axis=0)\r\n",
+					"\r\n",
+					"# Step 4: Transpose the result\r\n",
+					"GO_c = summed_GO_result.T"
+				],
+				"execution_count": 216
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### VALUE_ADDED"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Pretty much same procedure as the previous step except now the focus is on the VALUE_cs matrix\r\n",
+					"\r\n",
+					"replicated_VALUE_cs = np.tile(VALUE_cs[:, np.newaxis], (1, num_cntry))\r\n",
+					"elementwise_VALUE_product = replicated_VALUE_cs * imtx_cs_c\r\n",
+					"summed_VALUE_result = elementwise_VALUE_product.sum(axis=0)\r\n",
+					"VALUE_c = summed_VALUE_result.T\r\n",
+					"\r\n",
+					"#Derived value added\r\n",
+					"Inputs_cs = GRTR_INT_cs_cs.sum(axis = 0)\r\n",
+					"replicated_Inputs_cs = np.tile(Inputs_cs[:, np.newaxis], (1, num_cntry)) \r\n",
+					"elementwise_INPUTS_product = replicated_Inputs_cs * imtx_cs_c\r\n",
+					"summed_INPUTS_result = elementwise_INPUTS_product.sum(axis = 0)\r\n",
+					"Inputs_c = summed_INPUTS_result.T\r\n",
+					"\r\n",
+					"#VA = Gross Outputs _ Inputs\r\n",
+					"VALUE_derived_cs = GO_cs _ Inputs_cs\r\n",
+					"replicated_VALUE_derived_cs = np.tile(VALUE_derived_cs[:, np.newaxis], (1, num_cntry))\r\n",
+					"elementwise_VALUE_derived_product = replicated_VALUE_derived_cs * imtx_cs_c\r\n",
+					"summed_VALUE_derived_result = elementwise_VALUE_derived_product.sum(axis = 0)\r\n",
+					"VALUE_derived_c = summed_VALUE_derived_result.T"
+				],
+				"execution_count": 217
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Gross Exports\r\n",
+					"\r\n",
+					"Gross exports of intermediate goods and services from domestic sector $s$ in country $c$"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"ones_cs_cs_array = np.ones((num_cntry*num_sectors))\r\n",
+					"EXGR_INT_cs_cs = GRTR_INT_cs_cs * (ones_cs_cs_array _ imtx_cs_cs)\r\n",
+					"\r\n",
+					"EXGR_INT_cs_c = np.full((num_cntry * num_sectors, num_cntry), np.nan)\r\n",
+					"for k in range(num_cntry):\r\n",
+					"    EXGR_INT_cs_c[:, k] = np.sum(EXGR_INT_cs_cs[:, (k * num_sectors):(num_sectors * (k + 1))], axis=1)\r\n",
+					"\r\n",
+					"EXGR_INT_cs = EXGR_INT_cs_cs.sum(axis = 1)\r\n",
+					"\r\n",
+					"replicated_EXGR_INT_cs = np.tile(EXGR_INT_cs[:, np.newaxis], (1, num_cntry))\r\n",
+					"elementwise_EXGR_INT_cs_product = replicated_EXGR_INT_cs * imtx_cs_c\r\n",
+					"summed_EXGR_INT_cs_result = elementwise_EXGR_INT_cs_product.sum(axis = 0)\r\n",
+					"EXGR_INT_c = summed_EXGR_INT_cs_result.T"
+				],
+				"execution_count": 218
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Gross exports of final demand goods and services from domestic sector $s$ in country $c$."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"ones_cs_c_array = np.ones((num_cntry*num_sectors, num_cntry))\r\n",
+					"EXGR_FNL_cs_c = GRTR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c)\r\n",
+					"\r\n",
+					"EXGR_FNL_cs = EXGR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c)\r\n",
+					"EXGR_FNL_cs = EXGR_FNL_cs.sum(axis = 1)\r\n",
+					"\r\n",
+					"EXGR_FNL_c = np.tile(EXGR_FNL_cs[:, np.newaxis],(1, num_cntry)) * imtx_cs_c\r\n",
+					"EXGR_FNL_c = EXGR_FNL_c.sum(axis = 0).T"
+				],
+				"execution_count": 219
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Total gross exports (country_sector $\\times$ country)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"EXGR_cs_c = EXGR_INT_cs_c + EXGR_FNL_cs_c\r\n",
+					"EXGR_c_c = np.matmul(imtx_c_cs, EXGR_cs_c)"
+				],
+				"execution_count": 220
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Total gross exports (country_sector $\\times$ 1) and Total gross exports (country $\\times$ 1)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"EXGR_cs = EXGR_INT_cs + EXGR_FNL_cs\r\n",
+					"EXGR_c = EXGR_INT_c + EXGR_FNL_c"
+				],
+				"execution_count": 221
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Gross Imports: (Imported Intermediates)\r\n",
+					"\r\n",
+					"Gross Imports of Intermediates (by country_sector, and by country)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"ones_cs_array = np.ones((num_cntry * num_sectors))\r\n",
+					"IMGR_INT_cs = GRTR_INT_cs_cs * (ones_cs_array _ imtx_cs_cs)\r\n",
+					"IMGR_INT_cs = IMGR_INT_cs.sum(axis = 0)\r\n",
+					"\r\n",
+					"IMGR_INT_c = np.tile(IMGR_INT_cs[:, np.newaxis],(1, num_cntry)) * imtx_cs_c\r\n",
+					"IMGR_INT_c = IMGR_INT_c.sum(axis = 0).T"
+				],
+				"execution_count": 222
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Gross Imports of Final Demand goods and services (by country)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"ones_cs_c_array = np.ones((num_cntry * num_sectors, num_cntry))\r\n",
+					"IMGR_FNL_c = GRTR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c)\r\n",
+					"IMGR_FNL_c = IMGR_FNL_c.sum(axis = 0).T"
+				],
+				"execution_count": 223
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Total gross imports (by country)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"IMGR_c = IMGR_INT_c + IMGR_FNL_c"
+				],
+				"execution_count": 224
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Gross trade balance"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"BALGR_c = EXGR_c _ IMGR_c"
+				],
+				"execution_count": 225
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Demand for Domestic Inputs (Use of Domestic Intermediates)\r\n",
+					"\r\n",
+					"Gross Domestic Intermediate demand for domestic inputs by country_sector"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"DDGR_INT_cs = GRTR_INT_cs_cs * imtx_cs_cs\r\n",
+					"DDGR_INT_cs = DDGR_INT_cs.sum(axis = 0).T\r\n",
+					"\r\n",
+					"DDGR_INT_c = np.tile(DDGR_INT_cs[:, np.newaxis],(1, num_cntry)) * imtx_cs_c\r\n",
+					"DDGR_INT_c = DDGR_INT_c.sum(axis = 0).T"
+				],
+				"execution_count": 226
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Gross Domestic Final demand of domestic inputs by country_sector"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"DDGR_FNL_c = GRTR_FNL_cs_c * imtx_cs_c\r\n",
+					"DDGR_FNL_c = DDGR_FNL_c.sum(axis = 0).T"
+				],
+				"execution_count": 227
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Domestic and Foreign Final Demand"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"GRTR_FNL_DOM_cs_c = GRTR_FNL_cs_c * imtx_cs_c\r\n",
+					"GRTR_FNL_DOM_cs = GRTR_FNL_DOM_cs_c.sum(axis = 1)\r\n",
+					"\r\n",
+					"#By sector\r\n",
+					"GRTR_FNL_DOM_cs_ck = fd_matrix[0:num_cntry*num_sectors, 0:num_cntry*num_fd_components] * imtx_cs_ck\r\n",
+					"\r\n",
+					"##Sum across the third dimension, across countries for each of the 6 components of final demand\r\n",
+					"GRTR_FNL_DOM_cs_nfd = GRTR_FNL_DOM_cs_ck.reshape((num_cntry*num_sectors), num_fd_components, _1)\r\n",
+					"GRTR_FNL_DOM_cs_nfd = GRTR_FNL_DOM_cs_nfd.sum(axis = 2)\r\n",
+					"\r\n",
+					"#Foreign Demand\r\n",
+					"GRTR_FNL_FOR_cs_c = GRTR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c)\r\n",
+					"GRTR_FNL_FOR_cs = GRTR_FNL_FOR_cs_c.sum(axis = 1)\r\n",
+					"\r\n",
+					"##By sector\r\n",
+					"ones_cs_ck_array = np.ones((num_cntry*num_sectors, num_cntry*num_fd_components))\r\n",
+					"GRTR_FNL_FOR_cs_ck = fd_matrix[0:num_cntry*num_sectors, 0:num_cntry*num_fd_components] * (ones_cs_ck_array _ imtx_cs_ck)\r\n",
+					"\r\n",
+					"##Sum across the third dimension, across countries for each of the 6 components of final demand\r\n",
+					"GRTR_FNL_FOR_cs_nfd = GRTR_FNL_FOR_cs_ck.reshape((num_cntry*num_sectors), num_fd_components, _1)\r\n",
+					"GRTR_FNL_FOR_cs_nfd = GRTR_FNL_FOR_cs_nfd.sum(axis = 2)"
+				],
+				"execution_count": 228
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Compute the VA vector indirectly (just to check that no problems exist with inverses)\r\n",
+					"A matrix, input_output coefficients (share of gross output)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"with warnings.catch_warnings():\r\n",
+					"    warnings.simplefilter('ignore')\r\n",
+					"    Amat = GRTR_INT_cs_cs / np.tile(GO_cs[:, np.newaxis], (1, num_cntry * num_sectors))\r\n",
+					"Amat[np.isnan(Amat)] = 0\r\n",
+					"Amat[np.isinf(Amat)] = 0\r\n",
+					"\r\n",
+					"#VA shares\r\n",
+					"va_vec_cs = 1 _ np.sum(Amat)\r\n",
+					"V_hat = np.eye((num_cntry * num_sectors)) _ np.diag(Amat.sum(axis = 0))\r\n",
+					"\r\n",
+					"#Leontief inverse\r\n",
+					"IminusA = np.eye((num_cntry * num_sectors)) _ Amat\r\n",
+					"Bmat = np.linalg.inv(IminusA) #Leontief Inverse\r\n",
+					"\r\n",
+					"#Total Value Added by country_sector\r\n",
+					"BY = np.matmul(Bmat, GRTR_FNL_cs_c.sum(axis = 1))\r\n",
+					"va_cs = va_vec_cs * BY"
+				],
+				"execution_count": 229
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### DVA and FVA of gross exports (From $V*B*E$)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"TiVA = V_hat @ Bmat @ np.diag(EXGR_cs)"
+				],
+				"execution_count": 230
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"EXGR_DVA_cs = np.sum(TiVA * imtx_cs_cs, axis = 0).T\r\n",
+					"EXGR_FVA_cs = np.sum(TiVA * (ones_cs_array _ imtx_cs_cs), axis = 0).T\r\n",
+					"\r\n",
+					"EXGR_DVA_c = np.tile(EXGR_DVA_cs[:, np.newaxis],(1, num_cntry)) * imtx_cs_c\r\n",
+					"EXGR_DVA_c = EXGR_DVA_c.sum(axis = 0).T\r\n",
+					"\r\n",
+					"EXGR_FVA_c = np.tile(EXGR_FVA_cs[:, np.newaxis],(1, num_cntry)) * imtx_cs_c\r\n",
+					"EXGR_FVA_c = EXGR_FVA_c.sum(axis = 0).T"
+				],
+				"execution_count": 231
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"VS1_cs = np.sum(TiVA * (ones_cs_array _ imtx_cs_cs), axis = 1)\r\n",
+					"VS1_c = np.tile(VS1_cs[:, np.newaxis], (1, num_cntry)) * imtx_cs_c\r\n",
+					"VS1_c = VS1_c.sum(axis = 0).T"
+				],
+				"execution_count": 232
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Compute VA matrices (from $V*B*Y$)\r\n",
+					"\r\n",
+					"Off_diagonal elements give you the VAX components"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"VA_cs_c = V_hat @ Bmat @ GRTR_FNL_cs_c"
+				],
+				"execution_count": 233
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Total VAX (= VAX1 + VAX2 + VAX3); VAX_c is same as FFD_DVA"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"ones_c_c_array = np.ones((num_cntry, num_cntry))\r\n",
+					"VAX_cs_c = VA_cs_c * (ones_cs_c_array _ imtx_cs_c)\r\n",
+					"VA_c_c = np.matmul(imtx_c_cs, VA_cs_c)\r\n",
+					"\r\n",
+					"#Value added of exports only (exclude value_added of demestic goods)\r\n",
+					"VAX_c_c = VA_c_c * (ones_c_c_array _ np.eye(num_cntry))\r\n",
+					"\r\n",
+					"VAX_c = VAX_c_c.sum(axis = 1)"
+				],
+				"execution_count": 234
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Koopman et al. Equation 36 Terms\r\n",
+					"\r\n",
+					"This equation allows us to obtain the $G$ country, $N$ sector generalized version of gross exports accounting. See [this paper](https://www.nber.org/system/files/working_papers/w18579/w18579.pdf) for more details."
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Term 1"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"VAX1_cs_c = V_hat @ (Bmat * imtx_cs_cs) @ (GRTR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c))\r\n",
+					"VAX1_c_c = np.matmul(imtx_c_cs, VAX1_cs_c) # aggregate across rows by country\r\n",
+					"VAX1_c = VAX1_c_c.sum(axis = 1)"
+				],
+				"execution_count": 239
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Term 2"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"VAX2_cs_c = V_hat @ (Bmat * (ones_cs_array _ imtx_cs_cs)) @ (GRTR_FNL_cs_c  _ imtx_cs_c)\r\n",
+					"VAX2_c_c = np.matmul(imtx_c_cs, VAX2_cs_c) # aggregate across rows by country\r\n",
+					"VAX2_c = VAX2_c_c.sum(axis = 1)"
+				],
+				"execution_count": 240
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Term 3"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"VAX3_cs_c_sum1 = V_hat @ (Bmat * (ones_cs_array _ imtx_cs_cs)) @ (GRTR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c))\r\n",
+					"VAX3_cs_c_sum2 = VAX3_cs_c_sum1 * (ones_cs_c_array _ imtx_cs_c)\r\n",
+					"VAX3_c_c = np.matmul(imtx_c_cs, VAX3_cs_c_sum2) # aggregate across rows by country\r\n",
+					"VAX3_c = VAX3_c_c.sum(axis = 1)"
+				],
+				"execution_count": 241
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Term 4"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"DVA4_cs_c = V_hat @ (Bmat * (ones_cs_array _ imtx_cs_cs)) @ (GRTR_FNL_cs_c * (ones_cs_c_array _ imtx_cs_c))\r\n",
+					"DVA4_c_c = np.matmul(imtx_c_cs,DVA4_cs_c) * imtx_c_c # aggregate across rows by country, and take just the diagonal elements\r\n",
+					"DVA4_c = DVA4_c_c.sum(axis = 1)"
+				],
+				"execution_count": 242
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Term 5"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eye_inverse = np.linalg.inv(np.eye((num_cntry * num_sectors)))\r\n",
+					"DVA5_cs_c = V_hat @ (Bmat * (ones_cs_array _ imtx_cs_cs)) @ (Amat * (ones_cs_array _ imtx_cs_cs)) @\\\r\n",
+					"              ((eye_inverse _ Amat) * imtx_cs_cs) @ (GRTR_FNL_cs_c * imtx_cs_c)\r\n",
+					"DVA5_c_c = np.matmul(imtx_c_cs,DVA5_cs_c) * imtx_c_c # aggregate across rows by country, and take just the diagonal elements\r\n",
+					"DVA5_c = DVA5_c_c.sum(axis = 1)"
+				],
+				"execution_count": 244
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Term 6"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"DVA6_c = EXGR_DVA_c _ VAX_c _ DVA4_c _ DVA5_c"
+				],
+				"execution_count": 246
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Foreign Value Added in Domestic Final Demand"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"DFD_FVA_c = VAX_c_c.sum(axis = 0)"
+				],
+				"execution_count": 248
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Export Country Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"country_data = {\r\n",
+					"    'gross_output': GO_c,\r\n",
+					"    'gross_exports_intermediate': EXGR_INT_c,\r\n",
+					"    'gross_exports_final': EXGR_FNL_c,\r\n",
+					"    'gross_exports': EXGR_c,\r\n",
+					"    'gross_imports_intermediate': IMGR_INT_c,\r\n",
+					"    'gross_imports_final': IMGR_FNL_c,\r\n",
+					"    'gross_imports': IMGR_c,\r\n",
+					"    'gross_trade_balance': BALGR_c,\r\n",
+					"    'gross_domestic_demand_intermediate': DDGR_INT_c,\r\n",
+					"    'gross_domestic_demand_final': DDGR_FNL_c,\r\n",
+					"    'exports_domesitc_value_added': EXGR_DVA_c,\r\n",
+					"    'exports_foreign_value_addes' : EXGR_FVA_c,\r\n",
+					"    'exports_used_for_export_production': VS1_c,\r\n",
+					"    'value_added_exports': VAX_c,\r\n",
+					"    'foreign_value_added_domestic_demand': DFD_FVA_c,\r\n",
+					"    'export_value_added_one': VAX1_c,\r\n",
+					"    'export_value_added_two': VAX2_c,\r\n",
+					"    'export_value_added_three': VAX3_c,\r\n",
+					"    'domestic_value_added_four': DVA4_c,\r\n",
+					"    'domestic_value_added_five': DVA5_c,\r\n",
+					"    'domestic_value_added_six': DVA6_c,\r\n",
+					"    'gross_value_added': VALUE_c,\r\n",
+					"    'gross_derived_value_added': VALUE_derived_c\r\n",
+					"\r\n",
+					"}\r\n",
+					"country_data_frame = pd.DataFrame(country_data)\r\n",
+					"\r\n",
+					"# Convert DataFrame to CSV strings, export to folders\r\n",
+					"country_data_csv_buffer = io.StringIO()\r\n",
+					"country_data_frame.to_csv(country_data_csv_buffer, index=False)\r\n",
+					"country_data_csv_string = country_data_csv_buffer.getvalue()\r\n",
+					"mssparkutils.fs.put(\"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_Country_Statistics/test.csv\", country_data_csv_string, overwrite=True)\r\n",
+					"\r\n",
+					"\r\n",
+					"# country_data_frame.write.options(header = 'True', delimiter =  ',')\\\r\n",
+					"#    .csv(path='abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_Country_Statistics/test')"
+				],
+				"execution_count": 267
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Export Country_Sector Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"country_sector_data = {\r\n",
+					"    'gross_output': GO_cs,\r\n",
+					"    'gross_exports_intermediate': EXGR_INT_cs,\r\n",
+					"    'gross_exports_final': EXGR_FNL_cs,\r\n",
+					"    'gross_exports': EXGR_cs,\r\n",
+					"    'gross_imports_intermediate': IMGR_INT_cs,\r\n",
+					"    'gross_intermediate_domestic_demand': DDGR_INT_cs,\r\n",
+					"    'exports_domesitc_value_added': EXGR_DVA_cs,\r\n",
+					"    'exports_foreign_value_added': EXGR_FVA_cs,\r\n",
+					"    'exports_used_for_export_production': VS1_cs,\r\n",
+					"    'gross_value_added': VALUE_cs,\r\n",
+					"    'gross_derived_value_added': VALUE_derived_cs\r\n",
+					"}\r\n",
+					"\r\n",
+					"country_sector_data_frame = pd.DataFrame(country_sector_data)"
+				],
+				"execution_count": 256
+			}
+		]
+	}
+}

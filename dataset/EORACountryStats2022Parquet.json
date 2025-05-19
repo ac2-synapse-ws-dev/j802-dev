@@ -1,0 +1,22 @@
+{
+	"name": "EORACountryStats2022Parquet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ac2-synapse-ws-dev-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "eora-country-stats-2022.parquet",
+				"folderPath": "parquet",
+				"fileSystem": "acj802"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

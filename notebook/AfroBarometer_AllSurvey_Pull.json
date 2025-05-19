@@ -1,0 +1,347 @@
+{
+	"name": "AfroBarometer_AllSurvey_Pull",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "7400c9a8-83cd-4420-85d3-55caf651b5ee"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"print(\"Im Online\")"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"!pip install pyreadstat"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import requests\r\n",
+					"import pandas as pd\r\n",
+					"import pyreadstat\r\n",
+					"\r\n",
+					"# URL of the .sav file\r\n",
+					"url = 'https://www.afrobarometer.org/wp-content/uploads/2024/09/MOZ_R9.data_.final_.wtd_release.20Jun24.sav'\r\n",
+					"\r\n",
+					"# Fetch the .sav file\r\n",
+					"response = requests.get(url)\r\n",
+					"\r\n",
+					"# Save the file locally\r\n",
+					"with open('data.sav', 'wb') as file:\r\n",
+					"    file.write(response.content)\r\n",
+					"\r\n",
+					"# Read the .sav file into a pandas DataFrame\r\n",
+					"df, meta = pyreadstat.read_sav('data.sav')\r\n",
+					"\r\n",
+					"# Display the DataFrame\r\n",
+					"print(df.head())"
+				],
+				"execution_count": 4
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import requests\r\n",
+					"from bs4 import BeautifulSoup\r\n",
+					"\r\n",
+					"# URL of the webpage\r\n",
+					"url = 'https://www.afrobarometer.org/data/data-sets/?current-page=1#listing'\r\n",
+					"\r\n",
+					"# Fetch the webpage content\r\n",
+					"response = requests.get(url)\r\n",
+					"\r\n",
+					"if response.status_code == 200:\r\n",
+					"    html_content = response.text\r\n",
+					"    soup = BeautifulSoup(html_content, 'html.parser')\r\n",
+					"    \r\n",
+					"    # Find all links to datasets\r\n",
+					"    dataset_links = soup.find_all('a', href=True)\r\n",
+					"    \r\n",
+					"    # Filter and print dataset URLs\r\n",
+					"    for link in dataset_links:\r\n",
+					"        href = link['href']\r\n",
+					"        if 'data-sets' in href:\r\n",
+					"            print(href)\r\n",
+					"else:\r\n",
+					"    print(\"Failed to retrieve the webpage\")"
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import requests\r\n",
+					"from bs4 import BeautifulSoup\r\n",
+					"\r\n",
+					"base_url = 'https://www.afrobarometer.org/data/data-sets/?current-page='\r\n",
+					"urls_with_survey_resource = []\r\n",
+					"\r\n",
+					"# Loop through pages 1 to 30\r\n",
+					"for page in range(1, 31):\r\n",
+					"    url = f'{base_url}{page}#listing'\r\n",
+					"    response = requests.get(url)\r\n",
+					"    \r\n",
+					"    if response.status_code == 200:\r\n",
+					"        soup = BeautifulSoup(response.text, 'html.parser')\r\n",
+					"        \r\n",
+					"        # Find all links\r\n",
+					"        links = soup.find_all('a', href=True)\r\n",
+					"        \r\n",
+					"        # Filter links containing \"survey-resource\"\r\n",
+					"        for link in links:\r\n",
+					"            href = link['href']\r\n",
+					"            if 'survey-resource' in href:\r\n",
+					"                urls_with_survey_resource.append(href)\r\n",
+					"    else:\r\n",
+					"        print(f\"Failed to retrieve page {page}\")\r\n",
+					"\r\n",
+					"# Print all URLs containing \"survey-resource\"\r\n",
+					"for url in urls_with_survey_resource:\r\n",
+					"    print(url)\r\n",
+					""
+				],
+				"execution_count": 6
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Loop through urls_with_survey_resource and retrieve all URLs with .sav\r\n",
+					"sav_urls = []\r\n",
+					"\r\n",
+					"for survey_url in urls_with_survey_resource:\r\n",
+					"    response = requests.get(survey_url)\r\n",
+					"    \r\n",
+					"    if response.status_code == 200:\r\n",
+					"        soup = BeautifulSoup(response.text, 'html.parser')\r\n",
+					"        \r\n",
+					"        # Find all links\r\n",
+					"        links = soup.find_all('a', href=True)\r\n",
+					"        \r\n",
+					"        # Filter links containing \".sav\"\r\n",
+					"        for link in links:\r\n",
+					"            href = link['href']\r\n",
+					"            if '.sav' in href:\r\n",
+					"                sav_urls.append(href)\r\n",
+					"    else:\r\n",
+					"        print(f\"Failed to retrieve survey resource page: {survey_url}\")\r\n",
+					"\r\n",
+					"# Print all URLs containing \".sav\"\r\n",
+					"for url in sav_urls:\r\n",
+					"    print(url)"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Dictionary to store pandas DataFrames with file names as keys\r\n",
+					"data_frames = {}\r\n",
+					"\r\n",
+					"# Loop through sav_urls, download each .sav file, and convert it to a pandas DataFrame\r\n",
+					"for sav_url in sav_urls:\r\n",
+					"    try:\r\n",
+					"        response = requests.get(sav_url)\r\n",
+					"        \r\n",
+					"        if response.status_code == 200:\r\n",
+					"            # Extract the file name from the URL\r\n",
+					"            file_name = sav_url.split('/')[-1]\r\n",
+					"            \r\n",
+					"            # Save the .sav file locally\r\n",
+					"            with open(file_name, 'wb') as file:\r\n",
+					"                file.write(response.content)\r\n",
+					"            \r\n",
+					"            # Read the .sav file into a pandas DataFrame\r\n",
+					"            df, meta = pyreadstat.read_sav(file_name)\r\n",
+					"            \r\n",
+					"            # Store the DataFrame in the dictionary with the file name as the key\r\n",
+					"            data_frames[file_name] = df\r\n",
+					"        else:\r\n",
+					"            print(f\"Failed to retrieve .sav file from: {sav_url}\")\r\n",
+					"    except pyreadstat.ReadstatError as e:\r\n",
+					"        print(f\"Failed to read .sav file from: {sav_url} due to ReadstatError: {e}\")\r\n",
+					"\r\n",
+					"\r\n",
+					"# Display the DataFrames with their names\r\n",
+					"#for file_name, df in data_frames.items():\r\n",
+					" #   print(f\"DataFrame for {file_name}:\")\r\n",
+					"  #  print(df.head())"
+				],
+				"execution_count": 8
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import io\r\n",
+					"\"\"\"     #Blocked to Prevent Overwrite.\r\n",
+					"for key, data in data_frames.items():\r\n",
+					"    try:\r\n",
+					"        csv_buffer = io.StringIO()\r\n",
+					"        data.to_csv(csv_buffer, index=False)\r\n",
+					"        csv_string = csv_buffer.getvalue()\r\n",
+					"        file_path = f\"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AfroBarometerSurvey/{key}\"\r\n",
+					"        mssparkutils.fs.put(file_path, csv_string, overwrite=True)\r\n",
+					"    except Exception as e:\r\n",
+					"        print(f\"Failed to save {key}: {e}\")\r\n",
+					"\"\"\"\r\n",
+					"print(\"Complete\")"
+				],
+				"execution_count": 11
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(\"ALL DONE\")"
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}

@@ -1,0 +1,455 @@
+{
+	"name": "EORA_FD_T_Matrices_Generation",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "00187183-4978-4eca-89fb-b13392dbca46"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import numpy as np\r\n",
+					"import pandas as pd\r\n",
+					"import os\r\n",
+					"import io"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"2 OCT 2024\r\n",
+					"\r\n",
+					"I need to put labels back on these/create them. For the 190x190, thats pretty easy as its just the countries against the countries. The full-scale is harder, BUT I think it works like this: For the T matrix, it's the T labels symmetrically. So take the labels, and CtrlC/CtrlV against the rows and columns. For the FD, I think (given its 4915*1140 dim) its FD along the top, T labels on the rows.\r\n",
+					"\r\n",
+					"The why is to have something when query against when trying to find gross output (X = AX + Y, where X is the gross output AX is the intermediate demand, and Y is the final demand). So if we want to find the monetary value of the gross output of Swedish metal products we'd (pseudocode): \r\n",
+					"\r\n",
+					"SELECT * FROM T_2022 WHERE ISO3 == \"SWE\" AND SECTOR == \"Metal Products\"\r\n",
+					"SELECT * FROM FD_2022 WHERE ISO3 == \"SWE\" AND SECTOR == \"Metal Products\"\r\n",
+					"\r\n",
+					"SUM (somewhere and somehow)\r\n",
+					"\r\n",
+					"Result!\r\n",
+					"\r\n",
+					"Gross exports is trickier. The logic is the same (pick country and sector, sum to the right), but (per page 7 of the IMF working paper) we need to remove cells from the T matrix that are internal consumption (so metal products that are used to make more metal products) matrix, and we need to remove the values from the FD matrix where those goods were internally consumed as final demand.\r\n",
+					"\r\n",
+					"For the FD matrix, I'm assuming this means we'd need to zero out the 6 columns relating to (continuing the example above) Sweden. So the values in the \"SWE, Final demand, Household final consumption P.3h\tSWE, Final demand, Non-profit institutions serving households P.3n\tSWE, Final demand, Government final consumption P.3g\tSWE, Final demand, Gross fixed capital formation P.51\tSWE, Final demand, Changes in inventories P.52\tSWE, Final demand, Acquisitions less disposals of valuables P.53\" would all get set to zeros for this specific calculation. For the T matrix, there would be 26 values (one for each sector)\r\n",
+					"\r\n",
+					"I think."
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"outputs_hidden": false
+					}
+				},
+				"source": [
+					"#Creates the consolidated (190x190, so sector summed, per country) T (Intermediate Demand) Matrices for the EORA Data. ***WARNING*** Depending on size of cluster and number of years, running this cell can take several minutes.\r\n",
+					"\r\n",
+					"source_dir = \"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/\"\r\n",
+					"destination_dir = \"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA26/Intermediate Demand (T) Matrices/\"\r\n",
+					"\r\n",
+					"for year in range(1990, 2023):\r\n",
+					"    # Construct the folder and file paths\r\n",
+					"    subfolder = f\"Eora26_{year}_bp\"\r\n",
+					"    folder_path = os.path.join(source_dir, subfolder)\r\n",
+					"    file_path = os.path.join(folder_path, f\"Eora26_{year}_bp_T.txt\")\r\n",
+					"    \r\n",
+					"    matrix = spark.read.load(file_path, format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"\r\n",
+					"    print(f\"Original Matrix Shape for {year}: {matrix.shape}\")\r\n",
+					"\r\n",
+					"    chunk_size = 26\r\n",
+					"\r\n",
+					"    # Get the number of rows and columns in the original matrix\r\n",
+					"    num_rows, num_columns = matrix.shape\r\n",
+					"\r\n",
+					"    # Calculate the number of chunks (excluding the last column)\r\n",
+					"    num_chunks = (num_columns - 1) // chunk_size\r\n",
+					"\r\n",
+					"    # Initialize a new matrix to store the sums\r\n",
+					"    sum_matrix = np.zeros((num_rows, num_chunks + 1))\r\n",
+					"\r\n",
+					"    # Sum every 26 columns for each row (excluding the last column)\r\n",
+					"    for i in range(num_chunks):\r\n",
+					"        start_col = i * chunk_size\r\n",
+					"        end_col = (i + 1) * chunk_size\r\n",
+					"        sum_matrix[:, i] = np.sum(matrix[:, start_col:end_col], axis=1)\r\n",
+					"\r\n",
+					"    sum_matrix[:, -1] = matrix[:, -1]\r\n",
+					"\r\n",
+					"    print(f\"T Sum Matrix Shape: {sum_matrix.shape}\")\r\n",
+					"\r\n",
+					"    # Get the number of rows and columns in the sum_matrix\r\n",
+					"    num_rows, num_columns = sum_matrix.shape\r\n",
+					"\r\n",
+					"    # Calculate the number of chunks (excluding the last row)\r\n",
+					"    num_chunks = (num_rows - 1) // chunk_size\r\n",
+					"\r\n",
+					"    # Initialize a new square matrix to store the sums\r\n",
+					"    final_matrix = np.zeros((num_chunks + 1, num_columns))\r\n",
+					"\r\n",
+					"    # Sum every 26 rows for each column (excluding the last row)\r\n",
+					"    for i in range(num_chunks):\r\n",
+					"        start_row = i * chunk_size\r\n",
+					"        end_row = (i + 1) * chunk_size\r\n",
+					"        final_matrix[i, :] = np.sum(sum_matrix[start_row:end_row, :], axis=0)\r\n",
+					"\r\n",
+					"    # Add the values from the last row to the new matrix\r\n",
+					"    final_matrix[-1, :] = sum_matrix[-1, :]\r\n",
+					"\r\n",
+					"    print(f\"Final Matrix Shape for {year}: {final_matrix.shape}\")\r\n",
+					"    \r\n",
+					"    # Define the one_diagonal_matrix (replace this with your actual matrix)\r\n",
+					"    one_diagonal_matrix = np.eye(final_matrix.shape[0])\r\n",
+					"\r\n",
+					"    # Multiply final_matrix with one_diagonal_matrix element-wise\r\n",
+					"    result_matrix = np.multiply(final_matrix, one_diagonal_matrix)\r\n",
+					"\r\n",
+					"    print(f\"Result Matrix Shape for {year}: {result_matrix.shape}\")\r\n",
+					"\r\n",
+					"    output = StringIO()\r\n",
+					"    np.savetxt(output, result_matrix, delimiter=\",\")\r\n",
+					"\r\n",
+					"    # Save the result_matrix as a CSV file\r\n",
+					"    output_folder = os.path.join(destination_dir, f\"T_{year}.csv\")\r\n",
+					"    mssparkutils.fs.put(output_folder, output.getvalue())"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Creates the consolidated (190x190, so sector summed, per country) FD (Intermediate Demand) Matrices for the EORA Data. ***WARNING*** Depending on size of cluster and number of years, running this cell can take several minutes.\r\n",
+					"\r\n",
+					"source_dir = \"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/\"\r\n",
+					"destination_dir = \"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA26/Final Demand (FD) Matrices/\"\r\n",
+					"\r\n",
+					"for year in range(1990, 2023):\r\n",
+					"    # Construct the folder and file paths\r\n",
+					"    subfolder = f\"Eora26_{year}_bp\"\r\n",
+					"    folder_path = os.path.join(source_dir, subfolder)\r\n",
+					"    file_path = os.path.join(folder_path, f\"Eora26_{year}_bp_FD.txt\")\r\n",
+					"    \r\n",
+					"    matrix = spark.read.load(file_path, format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"\r\n",
+					"    print(f\"Original Matrix Shape for {year}: {matrix.shape}\")\r\n",
+					"\r\n",
+					"    # Define the size of each chunk (6 columns)\r\n",
+					"    chunk_size = 6\r\n",
+					"\r\n",
+					"    # Get the number of rows and columns in the original matrix\r\n",
+					"    num_rows, num_columns = matrix.shape\r\n",
+					"\r\n",
+					"    # Calculate the number of chunks (excluding the last column)\r\n",
+					"    num_chunks = (num_columns - 1) // chunk_size\r\n",
+					"\r\n",
+					"    # Initialize a new matrix to store the sums\r\n",
+					"    sum_matrix = np.zeros((num_rows, num_chunks + 1))\r\n",
+					"\r\n",
+					"    # Sum every 26 columns for each row (excluding the last column)\r\n",
+					"    for i in range(num_chunks):\r\n",
+					"        start_col = i * chunk_size\r\n",
+					"        end_col = (i + 1) * chunk_size\r\n",
+					"        sum_matrix[:, i] = np.sum(matrix[:, start_col:end_col], axis=1)\r\n",
+					"\r\n",
+					"    # Add the values from the last column to the new matrix\r\n",
+					"    sum_matrix[:, -1] = matrix[:, -1]\r\n",
+					"\r\n",
+					"    # Define the size of each chunk (26 rows)\r\n",
+					"    chunk_size = 26\r\n",
+					"\r\n",
+					"    # Get the number of rows and columns in the sum_matrix\r\n",
+					"    num_rows, num_columns = sum_matrix.shape\r\n",
+					"\r\n",
+					"    # Calculate the number of chunks (excluding the last row)\r\n",
+					"    num_chunks = (num_rows - 1) // chunk_size\r\n",
+					"\r\n",
+					"    # Initialize a new square matrix to store the sums\r\n",
+					"    final_matrix = np.zeros((num_chunks + 1, num_chunks + 1))\r\n",
+					"\r\n",
+					"    # Sum every 26 rows for each column (excluding the last row)\r\n",
+					"    for i in range(num_chunks):\r\n",
+					"        start_row = i * chunk_size\r\n",
+					"        end_row = (i + 1) * chunk_size\r\n",
+					"        final_matrix[i, :] = np.sum(sum_matrix[start_row:end_row, :], axis=0)\r\n",
+					"\r\n",
+					"    # Add the values from the last row to the new matrix\r\n",
+					"    final_matrix[-1, :] = sum_matrix[-1, :]\r\n",
+					"\r\n",
+					"    # Create a square matrix of size 190 by 190 with ones on the non-diagonal elements\r\n",
+					"    one_diagonal_matrix = np.ones((190, 190)) - np.eye(190)\r\n",
+					"\r\n",
+					"    # Multiply final_matrix with one_diagonal_matrix element-wise\r\n",
+					"    result_matrix = np.multiply(final_matrix, one_diagonal_matrix)\r\n",
+					"\r\n",
+					"    # Display the shape of the result2 matrix\r\n",
+					"    print(f\"Result Matrix Shape for {year}: {result_matrix.shape}\")\r\n",
+					"\r\n",
+					"    output = StringIO()\r\n",
+					"    np.savetxt(output, result_matrix, delimiter=\",\")\r\n",
+					"\r\n",
+					"    # Save the result_matrix as a CSV file\r\n",
+					"    output_folder = os.path.join(destination_dir, f\"FD_{year}.csv\")\r\n",
+					"    mssparkutils.fs.put(output_folder, output.getvalue())"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Prepping the Labels"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"t_labels = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA_Labels/labels_T.txt', format='csv', sep=\"\\t\").toPandas()\r\n",
+					"fd_labels = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA_Labels/labels_FD.txt', format='csv', sep=\"\\t\").toPandas()"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Reducing the labels down to one, concatenated, column of type \"ISO3, \"Sector\", \"Sub-sector\"\r\n",
+					"t_labels = t_labels.drop(labels = [\"_c1\", \"_c4\"], axis=1)\r\n",
+					"t_labels[\"Combined\"] = t_labels[[\"_c0\", \"_c2\", \"_c3\"]].apply(\", \".join, axis=1)\r\n",
+					"t_labels = t_labels.drop(labels = [\"_c0\", \"_c2\", \"_c3\"], axis=1)\r\n",
+					"\r\n",
+					"fd_labels = fd_labels.drop(labels = [\"_c1\", \"_c4\"], axis=1)\r\n",
+					"fd_labels[\"Combined\"] = fd_labels[[\"_c0\", \"_c2\", \"_c3\"]].apply(\", \".join, axis=1)\r\n",
+					"fd_labels = fd_labels.drop(labels = [\"_c0\", \"_c2\", \"_c3\"], axis=1)"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"t_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_T.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"fd_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_FD.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)"
+				],
+				"execution_count": 63
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"T Matrix Labels"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Convert the array to Dataframe and insert the concated row labels\r\n",
+					"t_matrixframe = pd.DataFrame(t_matrix)\r\n",
+					"t_matrixframe.insert(0, \"Combined\", t_labels['Combined'])\r\n",
+					"\r\n",
+					"#Transpose the row lables and convert to list\r\n",
+					"t_labels_Transposed = t_labels.T\r\n",
+					"t_new_headers = [\"0\"] + t_labels_Transposed.iloc[0].tolist()\r\n",
+					"\r\n",
+					"#Create new dataframe with the new headers. Matrix is not symmetric as the index counts as a column\r\n",
+					"t_finalframe = pd.DataFrame(t_matrixframe.values, columns = t_new_headers)"
+				],
+				"execution_count": 32
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"FD Matrix Labels"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#Convert the array to Dataframe and insert the concated row labels\r\n",
+					"fd_matrixframe = pd.DataFrame(fd_matrix)\r\n",
+					"fd_matrixframe.insert(0, \"Combined\", t_labels['Combined'])\r\n",
+					"\r\n",
+					"#Transpose the row lables and convert to list\r\n",
+					"fd_labels_Transposed = fd_labels.T\r\n",
+					"fd_new_headers = [\"0\"] + fd_labels_Transposed.iloc[0].tolist()\r\n",
+					"\r\n",
+					"#Create new dataframe with the new headers. Matrix is not symmetric as the index counts as a column\r\n",
+					"fd_finalframe = pd.DataFrame(fd_matrixframe.values, columns = fd_new_headers)"
+				],
+				"execution_count": 64
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Convert DataFrames to CSV strings, export to folders\r\n",
+					"t_csv_buffer = io.StringIO()\r\n",
+					"t_finalframe.to_csv(t_csv_buffer, index=False)\r\n",
+					"t_csv_string = t_csv_buffer.getvalue()\r\n",
+					"mssparkutils.fs.put(\"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA26/T_Labeled.csv\", t_csv_string, overwrite=True)\r\n",
+					"\r\n",
+					"fd_csv_buffer = io.StringIO()\r\n",
+					"fd_finalframe.to_csv(fd_csv_buffer, index=False)\r\n",
+					"fd_csv_string = fd_csv_buffer.getvalue()\r\n",
+					"mssparkutils.fs.put(\"abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA26/FD_Labeled.csv\", fd_csv_string, overwrite=True)"
+				],
+				"execution_count": 61
+			}
+		]
+	}
+}

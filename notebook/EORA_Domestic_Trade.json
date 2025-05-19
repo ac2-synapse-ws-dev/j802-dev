@@ -1,0 +1,328 @@
+{
+	"name": "EORA_Domestic_Trade",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "df86d2e0-f8de-4688-a803-2e37af9876d2"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import numpy as np\r\n",
+					"import pandas as pd"
+				],
+				"execution_count": 40
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"fd_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_FD.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"q_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_Q.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"qy_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_QY.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"t_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_T.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"va_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_VA.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)"
+				],
+				"execution_count": 38
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Define the size of each chunk (26 columns)\r\n",
+					"chunk_size = 26\r\n",
+					"\r\n",
+					"# Get the number of rows and columns in the original matrix\r\n",
+					"t_num_rows, t_num_columns = t_matrix.shape\r\n",
+					"\r\n",
+					"# Calculate the number of chunks (excluding the last column)\r\n",
+					"t_num_chunks = (t_num_columns - 1) // chunk_size\r\n",
+					"\r\n",
+					"# Initialize a new matrix to store the sums\r\n",
+					"t_sum_matrix = np.zeros((t_num_rows, t_num_chunks + 1))\r\n",
+					"\r\n",
+					"# Sum every 26 columns for each row (excluding the last column)\r\n",
+					"for i in range(num_chunks):\r\n",
+					"    start_col = i * chunk_size\r\n",
+					"    end_col = (i + 1) * chunk_size\r\n",
+					"    t_sum_matrix[:, i] = np.sum(t_matrix[:, start_col:end_col], axis=1)"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Add the values from the last column to the new matrix\r\n",
+					"t_sum_matrix[:, -1] = t_matrix[:, -1]\r\n",
+					"\r\n",
+					"# Display the shape of the new sum matrix\r\n",
+					"print(f\"T Sum Matrix Shape: {t_sum_matrix.shape}\")\r\n",
+					"\r\n",
+					"# Get the number of rows and columns in the sum_matrix\r\n",
+					"t_sum_num_rows, t_sum_num_columns = t_sum_matrix.shape"
+				],
+				"execution_count": 29
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Initialize a new square matrix to store the sums\r\n",
+					"t_final_matrix = np.zeros((t_num_chunks + 1, t_num_chunks + 1))\r\n",
+					"\r\n",
+					"# Sum every 26 rows for each column (excluding the last row)\r\n",
+					"for i in range(num_chunks):\r\n",
+					"    start_row = i * chunk_size\r\n",
+					"    end_row = (i + 1) * chunk_size\r\n",
+					"    t_final_matrix[i, :] = np.sum(t_sum_matrix[start_row:end_row, :], axis=0)"
+				],
+				"execution_count": 30
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Add the values from the last row to the new matrix\r\n",
+					"t_final_matrix[-1, :] = t_sum_matrix[-1, :]\r\n",
+					"\r\n",
+					"print(f\"Final T Matrix Shape: {t_final_matrix.shape}\")"
+				],
+				"execution_count": 31
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Define the one_diagonal_matrix\r\n",
+					"t_one_diag_matrix = np.eye(t_final_matrix.shape[0])\r\n",
+					"\r\n",
+					"# Multiply final_matrix with one_diagonal_matrix element-wise\r\n",
+					"t_result_matrix = np.multiply(t_final_matrix, t_one_diag_matrix)"
+				],
+				"execution_count": 35
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"print(f\"T Result Matrix Shape: {t_result_matrix.shape}\")"
+				],
+				"execution_count": 36
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Define the size of each chunk (6 columns)\r\n",
+					"fd_chunk_size = 6\r\n",
+					"\r\n",
+					"# Get the number of rows and columns in the original matrix\r\n",
+					"fd_num_rows, fd_num_columns = fd_matrix.shape\r\n",
+					"\r\n",
+					"# Calculate the number of chunks (excluding the last column)\r\n",
+					"fd_num_chunks = (fd_num_columns - 1) // fd_chunk_size\r\n",
+					"\r\n",
+					"# Initialize a new matrix to store the sums\r\n",
+					"fd_sum_matrix = np.zeros((fd_num_rows, fd_num_chunks + 1))\r\n",
+					"\r\n",
+					"# Sum every 26 columns for each row (excluding the last column)\r\n",
+					"for i in range(fd_num_chunks):\r\n",
+					"    start_col = i * fd_chunk_size\r\n",
+					"    end_col = (i + 1) * fd_chunk_size\r\n",
+					"    fd_sum_matrix[:, i] = np.sum(fd_matrix[:, start_col:end_col], axis=1)\r\n",
+					"\r\n",
+					"# Add the values from the last column to the new matrix\r\n",
+					"fd_sum_matrix[:, -1] = fd_matrix[:, -1]\r\n",
+					"\r\n",
+					"# Define the size of each chunk (26 rows)\r\n",
+					"fd_sum_chunk_size = 26\r\n",
+					"\r\n",
+					"# Get the number of rows and columns in the sum_matrix\r\n",
+					"fd_sum_num_rows, fd_sum_num_columns = fd_sum_matrix.shape\r\n",
+					"\r\n",
+					"# Calculate the number of chunks (excluding the last row)\r\n",
+					"fd_sum_num_chunks = (fd_sum_num_rows - 1) // fd_sum_chunk_size\r\n",
+					"\r\n",
+					"# Initialize a new square matrix to store the sums\r\n",
+					"fd_final_matrix = np.zeros((fd_sum_num_chunks + 1, fd_sum_num_chunks + 1))\r\n",
+					"\r\n",
+					"# Sum every 26 rows for each column (excluding the last row)\r\n",
+					"for i in range(fd_sum_num_chunks):\r\n",
+					"    start_row = i * fd_sum_chunk_size\r\n",
+					"    end_row = (i + 1) * fd_sum_chunk_size\r\n",
+					"    fd_final_matrix[i, :] = np.sum(fd_sum_matrix[start_row:end_row, :], axis=0)\r\n",
+					"\r\n",
+					"# Add the values from the last row to the new matrix\r\n",
+					"fd_final_matrix[-1, :] = fd_sum_matrix[-1, :]\r\n",
+					"\r\n",
+					"# Create a square matrix of size 190 by 190 with ones on the non-diagonal elements\r\n",
+					"fd_one_diag_matrix = np.ones((190, 190)) - np.eye(190)\r\n",
+					"\r\n",
+					"# Multiply final_matrix with one_diagonal_matrix element-wise\r\n",
+					"fd_result_matrix = np.multiply(fd_final_matrix, fd_one_diag_matrix)\r\n",
+					"\r\n",
+					"# Display the shape of the result2 matrix\r\n",
+					"print(f\"FD Result Matrix Shape: {fd_result_matrix.shape}\")"
+				],
+				"execution_count": 39
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"chunk_size = 26\r\n",
+					"sum_matrix = np.zeros((t_matrix.shape[0], (t_matrix.shape[1] - 1) // chunk_size + 1))\r\n",
+					"for i in range((t_matrix.shape[1] - 1) // chunk_size):\r\n",
+					"    sum_matrix[:, i] = np.sum(t_matrix[:, i * chunk_size:(i + 1) * chunk_size], axis=1)\r\n",
+					"sum_matrix[:, -1] = t_matrix[:, -1]"
+				]
+			}
+		]
+	}
+}

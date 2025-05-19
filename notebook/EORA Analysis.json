@@ -1,0 +1,716 @@
+{
+	"name": "EORA Analysis",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "b6036375-0f52-4584-a0f5-b60897ac1469"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#!pip install pymrio\r\n",
+					"#!pip install country_converter"
+				],
+				"execution_count": 92
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"import pandas as pd\r\n",
+					"import numpy as np\r\n",
+					"import pymrio as pmr\r\n",
+					"import matplotlib.pyplot as plt\r\n",
+					"import seaborn as sns\r\n",
+					"import seaborn.objects as so\r\n",
+					"from collections import namedtuple\r\n",
+					"from notebookutils import mssparkutils\r\n",
+					"import country_converter as coco"
+				],
+				"execution_count": 93
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Read Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"analysis_year = \"2022\"\r\n",
+					"country_stats_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_Country_Statistics/eora26-country-stats-'+analysis_year+'.csv'\r\n",
+					"country_label_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/EORA_Labels/country-labels.csv'\r\n",
+					"country_labels = spark.read.load(country_label_path, format='csv',sep=\",\").toPandas()\r\n",
+					"country_stats = spark.read.load(country_stats_path, format='csv', sep=\",\", header = 'True').toPandas()\r\n",
+					"obj_columns = country_stats.select_dtypes(include='object').columns\r\n",
+					"country_stats[obj_columns] = country_stats[obj_columns].astype(\"float\")\r\n",
+					"country_stats.index = country_labels.squeeze()\r\n",
+					"country_stats.index.name = 'Country'"
+				],
+				"execution_count": 2
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Global Value Chain"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"country_stats['gvc-part'] = (country_stats['exports-foreign-value-added'] + country_stats['exports-used-for-export-production'])/country_stats['gross-exports']\r\n",
+					"gvc_pos_term1 = np.log(1 + (country_stats['exports-used-for-export-production']/country_stats['gross-exports']))\r\n",
+					"gvc_pos_term2 = np.log(1 + (country_stats['exports-foreign-value-added']/country_stats['gross-exports']))\r\n",
+					"country_stats['gvc-pos'] = gvc_pos_term1 - gvc_pos_term2\r\n",
+					"country_stats"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"countries = ['USA', 'DEU', 'RUS','CHN','LBY']\r\n",
+					"country_stats['gvc-pos'] = country_stats['gvc-pos'].fillna(0)\r\n",
+					"country_stats_filtered = country_stats.loc[countries]\r\n",
+					"country_stats_filtered['countries'] = countries\r\n",
+					"x = country_stats_filtered['gvc-pos']\r\n",
+					"y = country_stats_filtered['gvc-part']\r\n",
+					"\r\n",
+					"so.Plot(country_stats_filtered, \"gvc-pos\", \"gvc-part\", text=\"countries\")\\\r\n",
+					"   .add(so.Dots(), so.Jitter(x=0.5, y=0.3))\\\r\n",
+					"   .add(so.Text(halign=\"left\"))"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## pymrio Package"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Build MRIO without a parser"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"_sectors = [\"sector1\", \"sector2\"]\r\n",
+					"_regions = [\"reg1\"]\r\n",
+					"_Z_multiindex = pd.MultiIndex.from_product(\r\n",
+					"    [_regions, _sectors], names=[\"region\", \"sector\"]\r\n",
+					")"
+				],
+				"execution_count": 33
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Z = pd.DataFrame(\r\n",
+					"    data=np.array([[150, 500], [200, 100]]), index=_Z_multiindex, columns=_Z_multiindex\r\n",
+					")\r\n",
+					"Z"
+				],
+				"execution_count": 34
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"_categories = [\"final demand\"]\r\n",
+					"_fd_multiindex = pd.MultiIndex.from_product(\r\n",
+					"    [_regions, _categories], names=[\"region\", \"category\"]\r\n",
+					")"
+				],
+				"execution_count": 35
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"Y = pd.DataFrame(\n",
+					"    data=np.array([[350], [1700]]), index=_Z_multiindex, columns=_fd_multiindex\n",
+					")\n",
+					"Y"
+				],
+				"execution_count": 36
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"F = pd.DataFrame(\n",
+					"    data=np.array([[650, 1400]]), index=[\"Payments_sectors\"], columns=_Z_multiindex\n",
+					")\n",
+					"F"
+				],
+				"execution_count": 37
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"io = pmr.IOSystem()\n",
+					"io.Z = Z\n",
+					"io.Y = Y"
+				],
+				"execution_count": 39
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"factor_input = pmr.Extension(name=\"Factor Input\", F=F)\n",
+					"io.factor_input = factor_input\n",
+					"io.factor_input.unit = pd.DataFrame(data=[\"USD\"], index=F.index, columns=[\"unit\"])\n",
+					"str(io)"
+				],
+				"execution_count": 41
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"io.calc_all()"
+				],
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"io.A"
+				],
+				"execution_count": 44
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"io.L"
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## EORA Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def parse_eora_mod(path, year=None, price=\"bp\", country_names=\"eora\"):\r\n",
+					"\r\n",
+					"    row_name = \"ROW\"\r\n",
+					"\r\n",
+					"    IDX_NAMES = {\r\n",
+					"    \"Z_col\": [\"region\", \"sector\"],\r\n",
+					"    \"Z_row\": [\"region\", \"sector\"],\r\n",
+					"    \"Z_row_unit\": [\"region\", \"sector\", \"unit\"],\r\n",
+					"    \"A_col\": [\"region\", \"sector\"],\r\n",
+					"    \"A_row\": [\"region\", \"sector\"],\r\n",
+					"    \"A_row_unit\": [\"region\", \"sector\", \"unit\"],\r\n",
+					"    \"Y_col1\": [\"region\"],\r\n",
+					"    \"Y_col2\": [\"region\", \"category\"],\r\n",
+					"    \"Y_row\": [\"region\", \"sector\"],\r\n",
+					"    \"Y_row_unit\": [\"region\", \"sector\", \"unit\"],\r\n",
+					"    \"F_col\": [\"region\", \"sector\"],\r\n",
+					"    \"F_row_single\": [\"stressor\"],\r\n",
+					"    \"F_row_unit\": [\"stressor\", \"unit\"],\r\n",
+					"    \"F_row_comp_unit\": [\"stressor\", \"compartment\", \"unit\"],\r\n",
+					"    \"F_row_src_unit\": [\"stressor\", \"source\", \"unit\"],\r\n",
+					"    \"F_row_src\": [\"stressor\", \"source\"],\r\n",
+					"    \"VA_row_single\": [\"inputtype\"],\r\n",
+					"    \"VA_row_unit\": [\"inputtype\", \"unit\"],\r\n",
+					"    \"VA_row_unit_cat\": [\"inputtype\", \"category\"],\r\n",
+					"    \"unit\": [\"unit\"],\r\n",
+					"    \"_reg_sec_unit\": [\"region\", \"sector\", \"unit\"],\r\n",
+					"    }\r\n",
+					"\r\n",
+					"    #eora file specs\r\n",
+					"    eora_sep = \"\\t\"\r\n",
+					"    ZY_col = namedtuple(\"ZY\", \"full eora system name\")(0,1,2,3)\r\n",
+					"\r\n",
+					"    eora_files = {\r\n",
+					"    \"Z\": path + \"Eora26_{year}_{price}_T.txt\".format(year=str(year), price=price),\r\n",
+					"    \"Q\": path + \"Eora26_{year}_{price}_Q.txt\".format(year=str(year), price=price),\r\n",
+					"    \"QY\": path + \"Eora26_{year}_{price}_QY.txt\".format(year=str(year), price=price),\r\n",
+					"    \"VA\": path + \"Eora26_{year}_{price}_VA.txt\".format(year=str(year), price=price),\r\n",
+					"    \"Y\": path + \"Eora26_{year}_{price}_FD.txt\".format(year=str(year), price=price),\r\n",
+					"    \"labels_Z\": path + \"labels_T.txt\",\r\n",
+					"    \"labels_Y\": path + \"labels_FD.txt\",\r\n",
+					"    \"labels_Q\": path + \"labels_Q.txt\",\r\n",
+					"    \"labels_VA\": path + \"labels_VA.txt\"\r\n",
+					"    }\r\n",
+					"\r\n",
+					"    header = namedtuple(\"header\", \"index columns index_names, column_names\")\r\n",
+					"\r\n",
+					"    eora_header_spec = {\r\n",
+					"        \"Z\": header(\r\n",
+					"            index=\"labels_Z\",\r\n",
+					"            columns=\"labels_Z\",\r\n",
+					"            index_names=IDX_NAMES[\"Z_row\"],\r\n",
+					"            column_names=IDX_NAMES[\"Z_col\"],\r\n",
+					"        ),\r\n",
+					"        \"Q\": header(\r\n",
+					"            index=\"labels_Q\",\r\n",
+					"            columns=\"labels_Z\",\r\n",
+					"            index_names=IDX_NAMES[\"F_row_src\"],\r\n",
+					"            column_names=IDX_NAMES[\"F_col\"],\r\n",
+					"        ),\r\n",
+					"        \"QY\": header(\r\n",
+					"            index=\"labels_Q\",\r\n",
+					"            columns=\"labels_Y\",\r\n",
+					"            index_names=IDX_NAMES[\"F_row_src\"],\r\n",
+					"            column_names=IDX_NAMES[\"Y_col2\"],\r\n",
+					"        ),\r\n",
+					"        \"VA\": header(\r\n",
+					"            index=\"labels_VA\",\r\n",
+					"            columns=\"labels_Z\",\r\n",
+					"            index_names=IDX_NAMES[\"VA_row_unit_cat\"],\r\n",
+					"            column_names=IDX_NAMES[\"F_col\"],\r\n",
+					"        ),\r\n",
+					"        \"Y\": header(\r\n",
+					"            index=\"labels_Z\",\r\n",
+					"            columns=\"labels_Y\",\r\n",
+					"            index_names=IDX_NAMES[\"Y_row\"],\r\n",
+					"            column_names=IDX_NAMES[\"Y_col2\"],\r\n",
+					"        )\r\n",
+					"        }\r\n",
+					"    \r\n",
+					"    if mssparkutils.fs.exists(path):\r\n",
+					"        eora_data = {\r\n",
+					"            key: (\r\n",
+					"                spark.read.load(filepath, format='csv',sep=\"\\t\").toPandas()\r\n",
+					"            )\r\n",
+					"            for key, filepath in eora_files.items()\r\n",
+					"        }\r\n",
+					"\r\n",
+					"    eora_data['Z'] = eora_data['Z'].astype(\"float\")\r\n",
+					"    eora_data['Q'] = eora_data['Q'].astype(\"float\")\r\n",
+					"    eora_data['QY'] = eora_data['QY'].astype(\"float\")\r\n",
+					"    eora_data['VA'] = eora_data['VA'].astype(\"float\")\r\n",
+					"    eora_data['Y'] = eora_data['Y'].astype(\"float\")\r\n",
+					"\r\n",
+					"    eora_data[\"labels_Z\"] = eora_data[\"labels_Z\"].iloc[\r\n",
+					"        :, [getattr(ZY_col, country_names), ZY_col.name]\r\n",
+					"    ]\r\n",
+					"    eora_data[\"labels_Y\"] = eora_data[\"labels_Y\"].iloc[\r\n",
+					"        :, [getattr(ZY_col, country_names), ZY_col.name]\r\n",
+					"    ]\r\n",
+					"    eora_data[\"labels_VA\"] = eora_data[\"labels_VA\"].iloc[\r\n",
+					"        :, : len(eora_header_spec[\"VA\"].column_names)\r\n",
+					"    ]\r\n",
+					"\r\n",
+					"    labQ = eora_data[\"labels_Q\"].iloc[:, : len(eora_header_spec[\"Q\"].column_names)]\r\n",
+					"    labQ.columns = IDX_NAMES[\"F_row_src\"]\r\n",
+					"    Q_unit = pd.DataFrame(labQ[\"stressor\"].str.extract(r\"\\((.*)\\)\", expand=False))\r\n",
+					"    Q_unit.columns = IDX_NAMES[\"unit\"]\r\n",
+					"\r\n",
+					"    labQ = labQ.copy()\r\n",
+					"    labQ.loc[:, \"stressor\"] = labQ[\"stressor\"].str.replace(r\"\\s\\((.*)\\)\", \"\", regex=True)\r\n",
+					"    eora_data[\"labels_Q\"] = labQ\r\n",
+					"\r\n",
+					"    for key in eora_header_spec.keys():\r\n",
+					"        eora_data[key].columns = (\r\n",
+					"            eora_data[eora_header_spec[key].columns]\r\n",
+					"            .set_index(list(eora_data[eora_header_spec[key].columns]))\r\n",
+					"            .index\r\n",
+					"        )\r\n",
+					"        eora_data[key].columns.names = eora_header_spec[key].column_names\r\n",
+					"        eora_data[key].index = (\r\n",
+					"            eora_data[eora_header_spec[key].index]\r\n",
+					"            .set_index(list(eora_data[eora_header_spec[key].index]))\r\n",
+					"            .index\r\n",
+					"        )\r\n",
+					"        eora_data[key].index.names = eora_header_spec[key].index_names\r\n",
+					"\r\n",
+					"        try:\r\n",
+					"            row_mask = ~eora_data[key].index.get_level_values('region').str.startswith(row_name)\r\n",
+					"            col_mask = ~eora_data[key].columns.get_level_values('region').str.startswith(row_name)\r\n",
+					"            eora_data[key] = eora_data[key].loc[row_mask , :]\r\n",
+					"            eora_data[key] = eora_data[key].loc[: , col_mask]\r\n",
+					"        except KeyError:\r\n",
+					"            pass\r\n",
+					"\r\n",
+					"    #This is a quick fix to remove all the \"ROW\" columns in these dataframes\r\n",
+					"\r\n",
+					"    eora_data['Q'] = eora_data['Q'].loc[:,~eora_data['Q'].columns.get_level_values('region').str.startswith(row_name)]\r\n",
+					"    eora_data['QY'] = eora_data['QY'].loc[:,~eora_data['QY'].columns.get_level_values('region').str.startswith(row_name)]\r\n",
+					"    eora_data['VA'] = eora_data['VA'].loc[:,~eora_data['VA'].columns.get_level_values('region').str.startswith(row_name)]\r\n",
+					"\r\n",
+					"    \r\n",
+					"    Q_unit.index = eora_data[\"Q\"].index\r\n",
+					"\r\n",
+					"    Z_unit = pd.DataFrame(\r\n",
+					"        data=[\"Mill USD\"] * len(eora_data[\"Z\"].index),\r\n",
+					"        index=eora_data[\"Z\"].index,\r\n",
+					"        columns=[\"unit\"],\r\n",
+					"    )\r\n",
+					"\r\n",
+					"    VA_unit = pd.DataFrame(\r\n",
+					"        data=[\"Mill USD\"] * len(eora_data[\"VA\"].index),\r\n",
+					"        index=eora_data[\"VA\"].index,\r\n",
+					"        columns=[\"unit\"],\r\n",
+					"    )\r\n",
+					"\r\n",
+					"    eora = pmr.IOSystem(\r\n",
+					"        Z=eora_data[\"Z\"],\r\n",
+					"        Y=eora_data[\"Y\"],\r\n",
+					"        unit=Z_unit,\r\n",
+					"        Q={\"name\": \"Q\", \"unit\": Q_unit, \"F\": eora_data[\"Q\"], \"F_Y\": eora_data[\"QY\"]},\r\n",
+					"        VA={\r\n",
+					"            \"name\": \"VA\",\r\n",
+					"            \"F\": eora_data[\"VA\"],\r\n",
+					"            \"unit\": VA_unit,\r\n",
+					"        },\r\n",
+					"    )\r\n",
+					"\r\n",
+					"\r\n",
+					"    return(eora)\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 169
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"year = \"2022\"\r\n",
+					"price=\"bp\"\r\n",
+					"path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_{year}_{price}/'.format(year=year, price=price)\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"eora_data = parse_eora_mod(path, year=year)"
+				],
+				"execution_count": 160
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eora_data.aggregate(\r\n",
+					"    region_agg=coco.agg_conc(\r\n",
+					"        original_countries=\"Eora\", aggregates=[\"OECD\"], missing_countries=\"NON_OECD\"\r\n",
+					"    )\r\n",
+					")"
+				],
+				"execution_count": 165
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eora_data.get_regions()"
+				],
+				"execution_count": 166
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"eora_data.calc_all()"
+				],
+				"execution_count": 164
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import matplotlib.pyplot as plt\r\n",
+					"\r\n",
+					"with plt.style.context(\"ggplot\"):\r\n",
+					"    eora_data.Q.plot_account((\"Total cropland area\", \"Total\"), figsize=(8, 5))\r\n",
+					"    plt.show()"
+				],
+				"execution_count": 168
+			}
+		]
+	}
+}

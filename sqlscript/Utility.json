@@ -1,0 +1,17 @@
+{
+	"name": "Utility",
+	"properties": {
+		"content": {
+			"query": "SELECT *,\n       TRY_CAST(Value AS FLOAT) AS Value_Float\nFROM World_Bank_Indicators;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "ac2j802database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

@@ -1,0 +1,364 @@
+{
+	"name": "UNCOMTRADE_PKG",
+	"properties": {
+		"description": "Set of Function for Searching UNCOMTRADE DATA",
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "6c6ac09b-6f0d-406f-b412-3f74307d29d4"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": true,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### UNCOMTRADE SEARCH\r\n",
+					"\r\n",
+					"This is a set of functions for searching UNCOMTRADE Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"print('UNCOMTRADE Serach Running')"
+				],
+				"execution_count": 22
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Packages"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import sys\r\n",
+					"!{sys.executable} -m pip install --upgrade comtradeapicall\r\n",
+					"\r\n",
+					"import pandas as pd\r\n",
+					"import requests\r\n",
+					"import comtradeapicall"
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Variable Prep"
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"my_Key = '1f4c419345184626a103f8e79f7fbc9c'"
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"typeCode = 'C' ### C == Good M == Service None== Everything\r\n",
+					"freqCode = 'A'  #### A== Annual M == Monthly\r\n",
+					"clCode = 'HS'  ### Use HS\r\n",
+					"period = '2022'  ### YYYY or YYYYMM must change Frequency code\r\n",
+					"reporterCode = None     #36 = Australia 842 USA 434=Lybia None== Any... TIP Use None for non-un or ureliable Countries (Lybia or Russia...)\r\n",
+					"cmdCode = None  ### The comodity code or set of comoditiy codes from the HS set in the comp trade ref tables\r\n",
+					"flowCode = None ###  None = all there are 12 codes in total  see ref tables (Import Export Rexport... etc) \r\n",
+					"partnerCode = '434'  ## Libya Primary Trade Flow -- Code of interest....\r\n",
+					"partner2Code = None ## Regional secondary flow??? Set to to none ...\r\n",
+					"customsCode = None  ### Catagorical Variable - 16 cats for tarrif purposes?\r\n",
+					"motCode = None #### Mode of transportation \r\n",
+					"maxRecords = 500  ### This is the max for a free account\r\n",
+					"format_output = 'JSON'   \r\n",
+					"aggregateBy = 'cmdCode'  # aggregates on a vector.  cmdCode to match the GUI output\r\n",
+					"breakdownMode = 'classic' ### classic and Plus.  Plus consolidates some of the data not sure why.\r\n",
+					"countOnly = False ### counts the number of records  use to understand if you exceed the 500 limit\r\n",
+					"includeDesc = True  #FALSE Removes all desc variables effectively make the data much smaller buy you need the ref tables to understand the cat vars."
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"def CountrySearch(Country_Code =\"434\", Year_Start = 2021, Year_End = 2023):\r\n",
+					"    \r\n",
+					"    Years = list(range(Year_Start, Year_End +1 ))\r\n",
+					"\r\n",
+					"    ## Get Size\r\n",
+					"\r\n",
+					"    size1 = comtradeapicall.getFinalData(my_Key,typeCode=typeCode, freqCode=freqCode, clCode=clCode, period=str(Years[0]),\r\n",
+					"                                        reporterCode=reporterCode, cmdCode=cmdCode, flowCode=flowCode, partnerCode=Country_Code,\r\n",
+					"                                        partner2Code=partner2Code,\r\n",
+					"                                        customsCode=customsCode, motCode=motCode, maxRecords=maxRecords, format_output=format_output,\r\n",
+					"                                        aggregateBy=aggregateBy, breakdownMode=breakdownMode, countOnly=True, includeDesc=includeDesc)\r\n",
+					"\r\n",
+					"    # Catch Error\r\n",
+					"    size = int(size1.iat[0,0])\r\n",
+					"    print(f\"{Years[0]} {size}\")\r\n",
+					"\r\n",
+					"    if int(size) > 499:\r\n",
+					"        print(\"Error Greater than 499 -- origin\")\r\n",
+					"        return(\"You Broke it at origin\") \r\n",
+					"\r\n",
+					"    #initial\r\n",
+					"    myData = comtradeapicall.getFinalData(my_Key, typeCode=typeCode, freqCode=freqCode, clCode=clCode, period=str(Years[0]),\r\n",
+					"                                        reporterCode=reporterCode, cmdCode=cmdCode, flowCode=flowCode, partnerCode=Country_Code,\r\n",
+					"                                        partner2Code=partner2Code,\r\n",
+					"                                        customsCode=customsCode, motCode=motCode, maxRecords=maxRecords, format_output=format_output,\r\n",
+					"                                        aggregateBy=aggregateBy, breakdownMode=breakdownMode, countOnly=countOnly, includeDesc=includeDesc)\r\n",
+					"    \r\n",
+					"\r\n",
+					"    for year in Years[1:]:\r\n",
+					"        print (f\"{'Moving to'} {year}\")\r\n",
+					"\r\n",
+					"        size1 = comtradeapicall.getFinalData(my_Key,typeCode=typeCode, freqCode=freqCode, clCode=clCode, period=str(year),\r\n",
+					"                                        reporterCode=reporterCode, cmdCode=cmdCode, flowCode=flowCode, partnerCode=Country_Code,\r\n",
+					"                                        partner2Code=partner2Code,\r\n",
+					"                                        customsCode=customsCode, motCode=motCode, maxRecords=maxRecords, format_output=format_output,\r\n",
+					"                                        aggregateBy=aggregateBy, breakdownMode=breakdownMode, countOnly=True, includeDesc=includeDesc)\r\n",
+					"\r\n",
+					"        # Catch Error\r\n",
+					"        size = int(size1.iat[0,0])\r\n",
+					"        print(f\"{year} {size}\")\r\n",
+					"\r\n",
+					"        if int(size) > 499:\r\n",
+					"            print(f\"{'Error Greater than 499'} {year}\")\r\n",
+					"            return(f\"{'You Broke it @'} {year}\" ) \r\n",
+					"\r\n",
+					"        #initial\r\n",
+					"        myDf = comtradeapicall.getFinalData(my_Key,typeCode=typeCode, freqCode=freqCode, clCode=clCode, period=str(year),\r\n",
+					"                                            reporterCode=reporterCode, cmdCode=cmdCode, flowCode=flowCode, partnerCode=Country_Code,\r\n",
+					"                                            partner2Code=partner2Code,\r\n",
+					"                                            customsCode=customsCode, motCode=motCode, maxRecords=maxRecords, format_output=format_output,\r\n",
+					"                                            aggregateBy=aggregateBy, breakdownMode=breakdownMode, countOnly=countOnly, includeDesc=includeDesc)\r\n",
+					"\r\n",
+					"        myData = pd.concat([myData, myDf])\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"    return (myData)\r\n",
+					""
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"   myData = comtradeapicall.getFinalData(my_Key,typeCode=typeCode, freqCode=freqCode, clCode=clCode, period=str(2022),\r\n",
+					"                                        reporterCode=reporterCode, cmdCode=cmdCode, flowCode=flowCode, partnerCode='434',\r\n",
+					"                                        partner2Code=partner2Code,\r\n",
+					"                                        customsCode=customsCode, motCode=motCode, maxRecords=maxRecords, format_output=format_output,\r\n",
+					"                                        aggregateBy=aggregateBy, breakdownMode=breakdownMode, countOnly=countOnly, includeDesc=includeDesc)"
+				],
+				"execution_count": 27
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"myDf"
+				],
+				"execution_count": 28
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"CountrySearch()"
+				],
+				"execution_count": 29
+			}
+		]
+	}
+}

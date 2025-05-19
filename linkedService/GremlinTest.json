@@ -1,0 +1,16 @@
+{
+	"name": "GremlinTest",
+	"type": "Microsoft.Synapse/workspaces/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "CosmosDb",
+		"typeProperties": {
+			"connectionString": "AccountEndpoint=https://labdb-gremlin.documents.azure.com:443/;Database=TestGraphDB;",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIlNZTkFQU0VAOEQxOTEyMEEtRDQxRi00RkRGLUIwQzMtRTY5QkRFNjc5RTc2XzhlYjRhYTI5LWFiYTctNGM5My05NjViLTZkZGI5M2NlYTJjNiINCn0="
+		},
+		"connectVia": {
+			"referenceName": "AutoResolveIntegrationRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}

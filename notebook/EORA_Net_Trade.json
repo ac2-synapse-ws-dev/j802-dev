@@ -1,0 +1,165 @@
+{
+	"name": "EORA_Net_Trade",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "ac2sparkpooldev",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": false,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "853a32b1-a47e-405b-a41d-d4720d33728e"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"synapse_widget": {
+				"version": "0.1"
+			},
+			"enableDebugMode": false,
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/fb276628-ada1-41d2-9fe6-b02c83c5d04e/resourceGroups/ac2-rg-synapse-01/providers/Microsoft.Synapse/workspaces/ac2-synapse-ws-dev/bigDataPools/ac2sparkpooldev",
+				"name": "ac2sparkpooldev",
+				"type": "Spark",
+				"endpoint": "https://ac2-synapse-ws-dev.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/ac2sparkpooldev",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net",
+					"authHeader": null
+				},
+				"sparkVersion": "3.4",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"extraHeader": null
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"import numpy as np"
+				],
+				"execution_count": 3
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"fd_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_FD.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"q_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_Q.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"qy_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_QY.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"t_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_T.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"va_matrix = spark.read.load('abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/Eora26_1990_bp/Eora26_1990_bp_VA.txt', format='csv', sep=\"\\t\").toPandas().to_numpy(dtype=float)\r\n",
+					"\r\n",
+					"#print(\"FD Shape: \", np.shape(fd_matrix))\r\n",
+					"#print(\"FD Type: \", fd_matrix.dtype)\r\n",
+					"#print(\"Q Shape: \", np.shape(q_matrix))\r\n",
+					"#print(\"Q Type: \", q_matrix.dtype)\r\n",
+					"#print(\"QY Shape: \", np.shape(qy_matrix))\r\n",
+					"#print(\"QY Type: \", qy_matrix.dtype)\r\n",
+					"#print(\"T Shape: \", np.shape(t_matrix))\r\n",
+					"#print(\"T Type: \", t_matrix.dtype)\r\n",
+					"#print(\"VA Shape: \", np.shape(va_matrix))\r\n",
+					"#print(\"VA Type: \", va_matrix.dtype)"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Calculate result_matrix from t_matrix\r\n",
+					"chunk_size = 26\r\n",
+					"sum_matrix = np.zeros((t_matrix.shape[0], (t_matrix.shape[1] - 1) // chunk_size + 1))\r\n",
+					"for i in range((t_matrix.shape[1] - 1) // chunk_size):\r\n",
+					"    sum_matrix[:, i] = np.sum(t_matrix[:, i * chunk_size:(i + 1) * chunk_size], axis=1)\r\n",
+					"sum_matrix[:, -1] = t_matrix[:, -1]\r\n",
+					"\r\n",
+					"final_matrix = np.zeros(((sum_matrix.shape[0] - 1) // chunk_size + 1, sum_matrix.shape[1]))\r\n",
+					"for i in range((sum_matrix.shape[0] - 1) // chunk_size):\r\n",
+					"    final_matrix[i, :] = np.sum(sum_matrix[i * chunk_size:(i + 1) * chunk_size, :], axis=0)\r\n",
+					"final_matrix[-1, :] = sum_matrix[-1, :]\r\n",
+					"one_diagonal_matrix = np.eye(final_matrix.shape[0])\r\n",
+					"result_matrix = np.multiply(final_matrix, one_diagonal_matrix)\r\n",
+					"\r\n",
+					"# Calculate result2_matrix from fd_matrix\r\n",
+					"chunk_size2 = 6\r\n",
+					"sum2_matrix = np.zeros((fd_matrix.shape[0], (fd_matrix.shape[1] - 1) // chunk_size2 + 1))\r\n",
+					"for i in range((fd_matrix.shape[1] - 1) // chunk_size2):\r\n",
+					"    sum2_matrix[:, i] = np.sum(fd_matrix[:, i * chunk_size2:(i + 1) * chunk_size2], axis=1)\r\n",
+					"sum2_matrix[:, -1] = fd_matrix[:, -1]\r\n",
+					"\r\n",
+					"final2_matrix = np.zeros(((sum2_matrix.shape[0] - 1) // chunk_size + 1, sum2_matrix.shape[1]))\r\n",
+					"for i in range((sum2_matrix.shape[0] - 1) // chunk_size):\r\n",
+					"    final2_matrix[i, :] = np.sum(sum2_matrix[i * chunk_size:(i + 1) * chunk_size, :], axis=0)\r\n",
+					"final2_matrix[-1, :] = sum2_matrix[-1, :]\r\n",
+					"one_diagonal_matrix = np.ones((190, 190)) - np.eye(190)\r\n",
+					"result2_matrix = np.multiply(final2_matrix, one_diagonal_matrix)\r\n",
+					"\r\n",
+					"# Combine result_matrix and result2_matrix if shapes match, otherwise print a warning\r\n",
+					"if result_matrix.shape == result2_matrix.shape:\r\n",
+					"    combined_result_matrix = np.add(result_matrix, result2_matrix)\r\n",
+					"else:\r\n",
+					"    print(f\"Warning: Matrices for year {year} have different shapes and cannot be added.\")\r\n",
+					"\r\n",
+					"# Step 1: Sum up the rows to get exports\r\n",
+					"exports = np.sum(combined_result_matrix, axis=1)\r\n",
+					"\r\n",
+					"# Step 2: Sum up the columns to get imports\r\n",
+					"imports = np.sum(combined_result_matrix, axis=0)\r\n",
+					"\r\n",
+					"# Step 3: Calculate net trade (exports minus imports)\r\n",
+					"net_trade_matrix = np.subtract.outer(exports, imports)\r\n",
+					"\r\n",
+					"# Step 4: Set diagonal elements to zero to avoid self-loops\r\n",
+					"np.fill_diagonal(net_trade_matrix, 0)\r\n",
+					"\r\n",
+					"# Step 5: Ensure total imports / total exports is 1\r\n",
+					"total_exports = np.sum(exports)\r\n",
+					"total_imports = np.sum(imports)\r\n",
+					"verify = total_imports / total_exports\r\n",
+					"print(f\"Net Trade Matrix Shape: {net_trade_matrix.shape}\")\r\n",
+					"print(f\"Total Exports: {total_exports}\")\r\n",
+					"print(f\"Total Imports: {total_imports}\")\r\n",
+					"print(f\"Total Imports / Total Exports: {verify}\")"
+				],
+				"execution_count": 20
+			}
+		]
+	}
+}
