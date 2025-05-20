@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6200c002-153a-471f-ab0b-1bac22af0fc8"
+				"spark.autotune.trackingId": "2250f849-acce-49d1-8ede-a02eb6d7f902"
 			}
 		},
 		"metadata": {
@@ -159,9 +159,74 @@
 					"import requests\n",
 					"import pandas_datareader.wb as wb\n",
 					"from notebookutils import mssparkutils\n",
-					"from pyspark.sql import SparkSession"
+					"from pyspark.sql import SparkSession\n",
+					"from pyspark.sql.functions import col, year"
 				],
-				"execution_count": 23
+				"execution_count": 2
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Helper Functions"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"def capture_named_args(**kwargs):\n",
+					"    return list(kwargs.keys())\n",
+					"\n",
+					"def create_domain_index(country_iso, df_1, df_2, df_3, df_4, df_5):\n",
+					"    arg_names = capture_named_args(\n",
+					"        country_iso=country_iso,\n",
+					"        df_1=df_1,\n",
+					"         df_2=df_2,\n",
+					"         df_3=df_3,\n",
+					"         df_4=df_4,\n",
+					"         df_5=df_5\n",
+					"    )\n",
+					"\n",
+					"    def extract_scores(df, df_name):\n",
+					"        if country_iso not in df['iso3'].values:\n",
+					"            raise ValueError(f\"{country_iso} not found. Check {df_name} data.\")\n",
+					"        return df[df['iso3'] == country_iso][['iso3', 'name', 'year'] + [col for col in df.columns if col.endswith('_score')]]\n",
+					"\n",
+					"    df_1_score = extract_scores(df_1, arg_names[1])\n",
+					"    df_2_score = extract_scores(df_2, arg_names[2])\n",
+					"    df_3_score = extract_scores(df_3, arg_names[3])\n",
+					"    df_4_score = extract_scores(df_4, arg_names[4])\n",
+					"    df_5_score = extract_scores(df_5, arg_names[5])\n",
+					"\n",
+					"    # Merge all dataframes on 'year'\n",
+					"    index_df = df_1_score.merge(df_2_score, on='year', suffixes=('', '_df2')) \\\n",
+					"                         .merge(df_3_score, on='year', suffixes=('', '_df3')) \\\n",
+					"                         .merge(df_4_score, on='year', suffixes=('', '_df4')) \\\n",
+					"                         .merge(df_5_score, on='year', suffixes=('', '_df5'))\n",
+					"\n",
+					"    # Rename columns to match expected output\n",
+					"    index_df.rename(columns={'iso3': 'iso3.x', 'name': 'name.x'}, inplace=True)\n",
+					"\n",
+					"    # Identify score columns\n",
+					"    score_cols = [col for col in index_df.columns if col.endswith('_score')]\n",
+					"\n",
+					"    # Interpolate missing values\n",
+					"    for col in score_cols:\n",
+					"        if index_df[col].isnull().any():\n",
+					"            index_df[col] = index_df[col].interpolate(method='linear', limit_direction='both')\n",
+					"\n",
+					"    # Calculate domain score\n",
+					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
+					"\n",
+					"    return index_df"
+				],
+				"execution_count": 3
 			},
 			{
 				"cell_type": "markdown",
@@ -232,10 +297,10 @@
 					"environmental_adaptation = pd.read_csv(environmental_adaptation_path)\n",
 					"\n",
 					"african_countries = pd.read_csv(african_countries_path)\n",
-					"african_countries.rename(columns={'Country': 'country'}, inplace=True)\n",
+					"african_countries.loc[african_countries['country'] == \"Côte d'Ivoire\", 'country'] = \"Cote d'Ivoire\"\n",
 					"\n",
 					"# Filter for African countries\n",
-					"environmental_adaptation = environmental_adaptation[environmental_adaptation['ISO3'].isin(african_countries['ISO3'])]\n",
+					"environmental_adaptation = environmental_adaptation[environmental_adaptation['ISO3'].isin(african_countries['iso3'])]\n",
 					"\n",
 					"# Reshape the data from wide to long format\n",
 					"environmental_adaptation = environmental_adaptation.melt(\n",
@@ -259,7 +324,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 11
+				"execution_count": 43
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"print(environmental_adaptation['name'].unique())"
+				],
+				"execution_count": 44
 			},
 			{
 				"cell_type": "markdown",
@@ -288,9 +360,13 @@
 					"\n",
 					"# Convert to DataFrame\n",
 					"youth_underdevelopment = pd.json_normalize(data)\n",
+					"youth_underdevelopment.loc[youth_underdevelopment['country'] == 'C�te d�Ivoire', 'country'] = \"Cote d'Ivoire\"\n",
+					"youth_underdevelopment.loc[youth_underdevelopment['country'] == 'S�o Tom� & Pr�ncipe', 'country'] = \"Sao Tome and Principe\"\n",
+					"youth_underdevelopment.loc[youth_underdevelopment['country'] =='Congo - Kinshasa', 'country'] = \"Democratic Republic of the Congo\"\n",
+					"youth_underdevelopment.loc[youth_underdevelopment['country'] == 'Congo - Brazzaville', 'country'] = \"Republic of the Congo\"\n",
 					"\n",
 					"# Filter for African countries\n",
-					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['iD_0'].isin(african_countries['ISO3'])]\n",
+					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['iD_0'].isin(african_countries['iso3'])]\n",
 					"\n",
 					"#Select iD_0, country, year, overall_score\n",
 					"youth_underdevelopment = youth_underdevelopment[['iD_0', 'country', 'year', 'overall_score']]\n",
@@ -311,7 +387,7 @@
 					"\n",
 					""
 				],
-				"execution_count": 4
+				"execution_count": 36
 			},
 			{
 				"cell_type": "markdown",
@@ -348,13 +424,17 @@
 					"# Fetch data for all countries\n",
 					"illiteracy = wb.download(indicator=indicator, country='all', start=2000, end=2023)\n",
 					"illiteracy = illiteracy.reset_index()\n",
+					"illiteracy.loc[illiteracy['country'] == 'Congo, Dem. Rep.', 'country'] = 'Democratic Republic of the Congo'\n",
+					"illiteracy.loc[illiteracy['country'] == 'Congo, Rep.', 'country'] = 'Republic of the Congo'\n",
+					"\n",
+					"\n",
 					"\n",
 					"#Get ISO3 values and filter for specific African countries\n",
 					"illiteracy = pd.merge(illiteracy, african_countries, on='country', how='left')\n",
-					"illiteracy = illiteracy[illiteracy['ISO3'].isin(african_countries['ISO3'])]\n",
+					"illiteracy = illiteracy[illiteracy['iso3'].isin(african_countries['iso3'])]\n",
 					"\n",
 					"#Rename columns\n",
-					"illiteracy = illiteracy[['ISO3', 'country', 'year', indicator]]\n",
+					"illiteracy = illiteracy[['iso3', 'country', 'year', indicator]]\n",
 					"illiteracy.columns = iri_col_names\n",
 					"illiteracy = illiteracy.dropna(subset=['value'])\n",
 					"illiteracy['value'] = 100 - illiteracy['value'] #want illiteracy percentage\n",
@@ -372,7 +452,7 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 20
+				"execution_count": 29
 			},
 			{
 				"cell_type": "markdown",
@@ -397,12 +477,20 @@
 					"    if '.xlsx' in file_path.path:\n",
 					"        file_paths.append(file_path.path)\n",
 					"\n",
+					"dfs = []\n",
+					"\n",
 					"\n",
 					"for path in file_paths:\n",
 					"    df = spark.read.format(\"com.crealytics.spark.excel\") \\\n",
-					"        .option(\"useHeader\", \"true\") \\\n",
+					"        .option(\"header\", \"true\") \\\n",
 					"        .option(\"inferSchema\", \"true\") \\\n",
 					"        .load(path)\n",
+					"    df = df.select(df.columns[:16]) #Data from 2009 onwards has an extra column\n",
+					"    \n",
+					"# Cast all columns to string to ensure compatibility\n",
+					"    for col_name in df.columns:\n",
+					"        df = df.withColumn(col_name, df[col_name].cast(\"string\"))\n",
+					"\n",
 					"    dfs.append(df)\n",
 					"\n",
 					"# Union all DataFrames\n",
@@ -410,21 +498,70 @@
 					"for df in dfs[1:]:\n",
 					"    combined_df = combined_df.unionByName(df)\n",
 					"\n",
-					"fsi_data = combined_df.toPandas()\n",
+					"\n",
+					"# Cast the first three columns\n",
+					"fsi_data = combined_df \\\n",
+					"    .withColumn(\"Country\", col(\"Country\").cast(\"string\")) \\\n",
+					"    .withColumn(\"Year\", year(col(\"Year\")).cast(\"int\")) \\\n",
+					"    .withColumn(\"Rank\", col(\"Rank\").cast(\"string\"))\n",
+					"\n",
+					"\n",
+					"# Cast the remaining columns to double\n",
+					"for col_name in fsi_data.columns[3:]:\n",
+					"    fsi_data = fsi_data.withColumn(col_name, col(col_name).cast(\"double\"))\n",
+					"\n",
+					"fsi_data = fsi_data.toPandas()\n",
+					"fsi_data[\"Year\"] = fsi_data[\"Year\"].fillna(0).astype(int)\n",
+					"\n",
 					"\n",
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 36
+				"execution_count": 7
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Human Flight (FSI E3)"
+				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"for path in file_paths:\n",
-					"    if '.xlsx' in path.path:\n",
-					"        print(path.path)"
+					"human_flight = fsi_data[['Country', 'Year', 'E3: Human Flight and Brain Drain']]\n",
+					"human_flight.loc[human_flight['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
+					"human_flight = pd.merge(human_flight, african_countries, left_on='Country',  right_on='country', how='left')\n",
+					"\n",
+					"print(human_flight.head())"
 				],
-				"execution_count": 35
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"print(african_countries['country'])"
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### "
+				]
 			},
 			{
 				"cell_type": "markdown",
