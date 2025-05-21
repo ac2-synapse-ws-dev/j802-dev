@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "61bf896e-298f-4cb9-ad3f-be68d8822bc1"
+				"spark.autotune.trackingId": "2d1505ce-5756-44c0-8cbe-04de83664ec4"
 			}
 		},
 		"metadata": {
@@ -136,7 +136,7 @@
 				"source": [
 					"%pip install pandas_datareader"
 				],
-				"execution_count": 6
+				"execution_count": 75
 			},
 			{
 				"cell_type": "markdown",
@@ -162,7 +162,7 @@
 					"from pyspark.sql import SparkSession\n",
 					"from pyspark.sql.functions import col, year"
 				],
-				"execution_count": 7
+				"execution_count": 78
 			},
 			{
 				"cell_type": "markdown",
@@ -235,7 +235,7 @@
 					"\n",
 					"    return index_df"
 				],
-				"execution_count": 51
+				"execution_count": 76
 			},
 			{
 				"cell_type": "markdown",
@@ -340,7 +340,7 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 17
+				"execution_count": 79
 			},
 			{
 				"cell_type": "code",
@@ -404,7 +404,7 @@
 					"\n",
 					""
 				],
-				"execution_count": 23
+				"execution_count": 80
 			},
 			{
 				"cell_type": "code",
@@ -476,7 +476,7 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 25
+				"execution_count": 81
 			},
 			{
 				"cell_type": "code",
@@ -548,7 +548,7 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 27
+				"execution_count": 82
 			},
 			{
 				"cell_type": "markdown",
@@ -589,7 +589,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 42
+				"execution_count": 83
 			},
 			{
 				"cell_type": "code",
@@ -635,7 +635,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 44
+				"execution_count": 84
 			},
 			{
 				"cell_type": "code",
@@ -660,45 +660,23 @@
 			{
 				"cell_type": "code",
 				"source": [
+					"country_iso = \"KEN\"\n",
+					"df_1 = environmental_adaptation[environmental_adaptation['iso3'] == country_iso].copy()\n",
+					"df_1.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
+					"df_2 = youth_underdevelopment[youth_underdevelopment['iso3'] == country_iso].copy()\n",
+					"df_2.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
-					"def capture_original_variable_names(var_dict):\n",
-					"    df_values = [value for value in var_dict.values() if isinstance(value, pd.DataFrame)]\n",
-					"    matched_names = []\n",
-					"\n",
-					"    for name, obj in globals().items():\n",
-					"        if isinstance(obj, pd.DataFrame) and any(obj is val for val in df_values):\n",
-					"            matched_names.append(name)\n",
-					"\n",
-					"    return matched_names\n",
-					"\n",
-					"\n",
-					"\n",
-					"\n",
-					"# Dynamically passing variables\n",
-					"variables = {\n",
-					"    \"df1\": environmental_adaptation,\n",
-					"    \"df2\": youth_underdevelopment,\n",
-					"    \"df3\": illiteracy,\n",
-					"    \"df4\": human_flight,\n",
-					"    \"df5\": demographic_pressure\n",
-					"}\n",
-					"\n",
-					"df_values = [value for value in variables.values() if isinstance(value, pd.DataFrame)]\n",
-					"for name, obj in globals().items():\n",
-					"    if isinstance(obj, pd.DataFrame) and any(obj is val for val in df_values):\n",
-					"        print(name)\n",
-					""
+					"index_df = df_1.merge(df_2, on='year', how=\"outer\",suffixes=('', '_df2'))"
 				],
-				"execution_count": 73
+				"execution_count": 125
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"df_names = [name for name, obj in globals().items() if isinstance(obj, pd.DataFrame)]\n",
-					"print(df_names)"
+					"print(index_df)"
 				],
-				"execution_count": 63
+				"execution_count": 126
 			},
 			{
 				"cell_type": "markdown",
