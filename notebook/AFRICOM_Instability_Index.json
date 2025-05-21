@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b6d184b7-fb42-4bb8-ada7-a1ddfd6f20cb"
+				"spark.autotune.trackingId": "b9caacb6-bc76-457d-8025-a2a51bd44076"
 			}
 		},
 		"metadata": {
@@ -136,7 +136,7 @@
 				"source": [
 					"%pip install pandas_datareader"
 				],
-				"execution_count": 131
+				"execution_count": 152
 			},
 			{
 				"cell_type": "markdown",
@@ -162,7 +162,7 @@
 					"from pyspark.sql import SparkSession\n",
 					"from pyspark.sql.functions import col, year"
 				],
-				"execution_count": 78
+				"execution_count": 153
 			},
 			{
 				"cell_type": "markdown",
@@ -188,37 +188,35 @@
 					"def capture_named_args(**kwargs):\n",
 					"    return list(kwargs.keys())\n",
 					"\n",
-					"def create_domain_index(country_iso, df_1, df_2, df_3, df_4, df_5):\n",
-					"    arg_names = capture_named_args(\n",
-					"        country_iso=country_iso,\n",
-					"        df_1=df_1,\n",
-					"         df_2=df_2,\n",
-					"         df_3=df_3,\n",
-					"         df_4=df_4,\n",
-					"         df_5=df_5\n",
-					"    )\n",
+					"def create_domain_index(country_iso, df1, df2, df3, df4, df5):\n",
+					"    try:\n",
+					"        if all(country_iso in df[\"iso3\"].values for df in [df1, df2, df3, df4, df5]):\n",
+					"            print(f\"{country_iso} exists in all data frames. Continuing!\")\n",
+					"    except KeyError as e:\n",
+					"        print(f\"Column not found: {e}\")\n",
+					"    except Exception as e:\n",
+					"        print(f\"{country_iso} is missing in at least one data frame.\")\n",
 					"\n",
-					"    def extract_scores(df, df_name):\n",
-					"        if country_iso not in df['iso3'].values:\n",
-					"            raise ValueError(f\"{country_iso} not found. Check {df_name} data.\")\n",
-					"        return df[df['iso3'] == country_iso][['iso3', 'name', 'year'] + [col for col in df.columns if col.endswith('_score')]]\n",
+					"    df_1 = df1[df1['iso3'] == country_iso].copy()\n",
+					"    df_1.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
-					"    df_1_score = extract_scores(df_1, arg_names[1])\n",
-					"    df_2_score = extract_scores(df_2, arg_names[2])\n",
-					"    df_3_score = extract_scores(df_3, arg_names[3])\n",
-					"    df_4_score = extract_scores(df_4, arg_names[4])\n",
-					"    df_5_score = extract_scores(df_5, arg_names[5])\n",
+					"    df_2 = df2[df2['iso3'] == country_iso].copy()\n",
+					"    df_2.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
+					"    df_3 = df3[df3['iso3'] == country_iso].copy()\n",
+					"    df_3.drop(columns=[\"value\"], inplace=True)\n",
+					"\n",
+					"    df_4 = df4[df4['iso3'] == country_iso].copy()\n",
+					"    df_4.drop(columns=[\"value\"], inplace=True)\n",
+					"\n",
+					"    df_5 = df5[df5['iso3'] == country_iso].copy()\n",
+					"    df_5.drop(columns=[\"value\"], inplace=True)\n",
+					"        \n",
 					"    # Merge all dataframes on 'year'\n",
-					"    index_df = df_1_score.merge(df_2_score, on='year', suffixes=('', '_df2')) \\\n",
-					"                         .merge(df_3_score, on='year', suffixes=('', '_df3')) \\\n",
-					"                         .merge(df_4_score, on='year', suffixes=('', '_df4')) \\\n",
-					"                         .merge(df_5_score, on='year', suffixes=('', '_df5'))\n",
-					"\n",
-					"    print(\"Current Index DF\")\n",
-					"    print(index_df)\n",
-					"    # Rename columns to match expected output\n",
-					"    index_df.rename(columns={'iso3': 'iso3.x', 'name': 'name.x'}, inplace=True)\n",
+					"    index_df = df_1.merge(df_2, on='year', how='outer', suffixes=('', '_df2')) \\\n",
+					"                         .merge(df_3, on='year', how='outer', suffixes=('', '_df3')) \\\n",
+					"                         .merge(df_4, on='year', how='outer', suffixes=('', '_df4')) \\\n",
+					"                         .merge(df_5, on='year', how='outer', suffixes=('', '_df5'))\n",
 					"\n",
 					"    # Identify score columns\n",
 					"    score_cols = [col for col in index_df.columns if col.endswith('_score')]\n",
@@ -229,13 +227,16 @@
 					"        if index_df[col].isnull().any():\n",
 					"            index_df[col] = index_df[col].interpolate(method='linear', limit_direction='both')\n",
 					"\n",
+					"    keep_cols = ['iso3', 'name', 'year'] + score_cols\n",
+					"    index_df = index_df[keep_cols]\n",
+					"\n",
 					"    # Calculate domain score\n",
 					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
-					"    index_df = index_df[['iso3.x', 'name.x', 'year', 'domain_score']]\n",
+					"    index_df = index_df[['iso3', 'name', 'year', 'domain_score']]\n",
 					"\n",
 					"    return index_df"
 				],
-				"execution_count": 76
+				"execution_count": 180
 			},
 			{
 				"cell_type": "markdown",
@@ -340,14 +341,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 79
+				"execution_count": 155
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 21
+				"execution_count": 156
 			},
 			{
 				"cell_type": "markdown",
@@ -404,14 +405,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 80
+				"execution_count": 157
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 24
+				"execution_count": 158
 			},
 			{
 				"cell_type": "markdown",
@@ -476,14 +477,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 81
+				"execution_count": 159
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 26
+				"execution_count": 160
 			},
 			{
 				"cell_type": "markdown",
@@ -548,7 +549,7 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 82
+				"execution_count": 161
 			},
 			{
 				"cell_type": "markdown",
@@ -589,14 +590,14 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 83
+				"execution_count": 162
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(human_flight['name'], african_countries['country'])"
 				],
-				"execution_count": 43
+				"execution_count": 163
 			},
 			{
 				"cell_type": "markdown",
@@ -635,14 +636,14 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 84
+				"execution_count": 164
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(demographic_pressure['name'], african_countries['country'])"
 				],
-				"execution_count": 45
+				"execution_count": 165
 			},
 			{
 				"cell_type": "markdown",
@@ -661,22 +662,16 @@
 				"cell_type": "code",
 				"source": [
 					"country_iso = \"KEN\"\n",
-					"df_1 = environmental_adaptation[environmental_adaptation['iso3'] == country_iso].copy()\n",
-					"df_1.drop(columns=[\"value\"], inplace=True)\n",
-					"\n",
-					"df_2 = youth_underdevelopment[youth_underdevelopment['iso3'] == country_iso].copy()\n",
-					"df_2.drop(columns=[\"value\"], inplace=True)\n",
-					"\n",
-					"index_df = df_1.merge(df_2, on='year', how=\"outer\",suffixes=('', '_df2'))"
+					"index_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
 				],
-				"execution_count": 125
+				"execution_count": 181
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(index_df)"
 				],
-				"execution_count": 126
+				"execution_count": 182
 			},
 			{
 				"cell_type": "markdown",
