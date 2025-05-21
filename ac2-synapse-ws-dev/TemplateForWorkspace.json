@@ -1602,7 +1602,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "a7ed2fb7-7746-4236-a4e9-734a69354b74"
+						"spark.autotune.trackingId": "6ccf04b4-783b-42b8-9986-583f53eb107f"
 					}
 				},
 				"metadata": {
@@ -1723,7 +1723,7 @@
 							"%pip install pandas_datareader"
 						],
 						"outputs": [],
-						"execution_count": 75
+						"execution_count": 131
 					},
 					{
 						"cell_type": "markdown",
