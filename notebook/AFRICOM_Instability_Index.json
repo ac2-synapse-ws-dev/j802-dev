@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "e7a1c3e8-8a0a-46d4-8318-cc2986f6f1dd"
+				"spark.autotune.trackingId": "61bf896e-298f-4cb9-ad3f-be68d8822bc1"
 			}
 		},
 		"metadata": {
@@ -136,7 +136,7 @@
 				"source": [
 					"%pip install pandas_datareader"
 				],
-				"execution_count": 1
+				"execution_count": 6
 			},
 			{
 				"cell_type": "markdown",
@@ -162,7 +162,7 @@
 					"from pyspark.sql import SparkSession\n",
 					"from pyspark.sql.functions import col, year"
 				],
-				"execution_count": 2
+				"execution_count": 7
 			},
 			{
 				"cell_type": "markdown",
@@ -180,6 +180,11 @@
 			{
 				"cell_type": "code",
 				"source": [
+					"def check_country_names(list_a, list_b):\n",
+					"    set_a = set(list_a)\n",
+					"    set_b = set(list_b)\n",
+					"    print(set_a.difference(set_b))\n",
+					"\n",
 					"def capture_named_args(**kwargs):\n",
 					"    return list(kwargs.keys())\n",
 					"\n",
@@ -210,11 +215,14 @@
 					"                         .merge(df_4_score, on='year', suffixes=('', '_df4')) \\\n",
 					"                         .merge(df_5_score, on='year', suffixes=('', '_df5'))\n",
 					"\n",
+					"    print(\"Current Index DF\")\n",
+					"    print(index_df)\n",
 					"    # Rename columns to match expected output\n",
 					"    index_df.rename(columns={'iso3': 'iso3.x', 'name': 'name.x'}, inplace=True)\n",
 					"\n",
 					"    # Identify score columns\n",
 					"    score_cols = [col for col in index_df.columns if col.endswith('_score')]\n",
+					"    \n",
 					"\n",
 					"    # Interpolate missing values\n",
 					"    for col in score_cols:\n",
@@ -223,10 +231,11 @@
 					"\n",
 					"    # Calculate domain score\n",
 					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
+					"    index_df = index_df[['iso3.x', 'name.x', 'year', 'domain_score']]\n",
 					"\n",
 					"    return index_df"
 				],
-				"execution_count": 3
+				"execution_count": 51
 			},
 			{
 				"cell_type": "markdown",
@@ -301,6 +310,13 @@
 					"\n",
 					"# Filter for African countries\n",
 					"environmental_adaptation = environmental_adaptation[environmental_adaptation['ISO3'].isin(african_countries['iso3'])]\n",
+					"environmental_adaptation.loc[environmental_adaptation['Name'] == \"Congo\", 'Name'] = \"Republic of the Congo\"\n",
+					"environmental_adaptation.loc[environmental_adaptation['Name'] == \"Congo, the Democratic Republic o\", 'Name'] = \"Democratic Republic of the Congo\"\n",
+					"environmental_adaptation.loc[environmental_adaptation['Name'] == \"Cape Verde\", 'Name'] = \"Cabo Verde\"\n",
+					"environmental_adaptation.loc[environmental_adaptation['Name'] == \"Libyan Arab Jamahiriya\", 'Name'] = \"Libya\"\n",
+					"environmental_adaptation.loc[environmental_adaptation['Name'] == \"Swaziland\", 'Name'] = \"Eswatini\"\n",
+					"environmental_adaptation.loc[environmental_adaptation['Name'] == \"Tanzania, United Republic of\", 'Name'] = \"Tanzania\"\n",
+					"\n",
 					"\n",
 					"# Reshape the data from wide to long format\n",
 					"environmental_adaptation = environmental_adaptation.melt(\n",
@@ -324,14 +340,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 43
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"print(environmental_adaptation['name'].unique())"
+					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 44
+				"execution_count": 21
 			},
 			{
 				"cell_type": "markdown",
@@ -364,6 +380,7 @@
 					"youth_underdevelopment.loc[youth_underdevelopment['country'] == 'S�o Tom� & Pr�ncipe', 'country'] = \"Sao Tome and Principe\"\n",
 					"youth_underdevelopment.loc[youth_underdevelopment['country'] =='Congo - Kinshasa', 'country'] = \"Democratic Republic of the Congo\"\n",
 					"youth_underdevelopment.loc[youth_underdevelopment['country'] == 'Congo - Brazzaville', 'country'] = \"Republic of the Congo\"\n",
+					"youth_underdevelopment.loc[youth_underdevelopment['country'] == 'Cape Verde', 'country'] = \"Cabo Verde\"\n",
 					"\n",
 					"# Filter for African countries\n",
 					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['iD_0'].isin(african_countries['iso3'])]\n",
@@ -387,7 +404,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 36
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
+				],
+				"execution_count": 24
 			},
 			{
 				"cell_type": "markdown",
@@ -452,7 +476,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 29
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(illiteracy['name'], african_countries['country'])"
+				],
+				"execution_count": 26
 			},
 			{
 				"cell_type": "markdown",
@@ -517,7 +548,7 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 7
+				"execution_count": 27
 			},
 			{
 				"cell_type": "markdown",
@@ -529,26 +560,145 @@
 					}
 				},
 				"source": [
-					"### Human Flight (FSI E3)"
+					"### Human Flight (FSI E3)\n",
+					"\n",
+					"This is a subsection of the `fsi` dataset, thus a similar methodology will be used for other `fsi` subsets."
 				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"human_flight = fsi_data[['Country', 'Year', 'E3: Human Flight and Brain Drain']]\n",
+					"#Extract appropriate column and format the rest of the data\n",
+					"selected_col = 'E3: Human Flight and Brain Drain'\n",
+					"human_flight = fsi_data[['Country', 'Year', selected_col]]\n",
 					"human_flight.loc[human_flight['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
 					"human_flight = pd.merge(human_flight, african_countries, left_on='Country',  right_on='country', how='left')\n",
+					"human_flight = human_flight[human_flight['iso3'].isin(african_countries['iso3'])]\n",
+					"human_flight = human_flight[['iso3', 'Country', 'Year', selected_col]]\n",
+					"human_flight.columns = iri_col_names\n",
+					"human_flight = human_flight.drop_duplicates(subset=['iso3', 'year'], keep=\"first\")\n",
+					"\n",
+					"# Compute 'human_flight_score'\n",
+					"human_flight['human_flight_score'] = 2 * human_flight['value'] / 10\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"human_flight['year'] = pd.to_numeric(human_flight['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"human_flight = human_flight[human_flight['year'] >= 2000]\n",
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 12
+				"execution_count": 42
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"print(african_countries['country'])"
+					"check_country_names(human_flight['name'], african_countries['country'])"
 				],
-				"execution_count": 14
+				"execution_count": 43
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Demographic Pressures (S1)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Extract appropriate column and format the rest of the data\n",
+					"selected_col = 'S1: Demographic Pressures'\n",
+					"demographic_pressure = fsi_data[['Country', 'Year', selected_col]]\n",
+					"demographic_pressure.loc[demographic_pressure['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
+					"demographic_pressure = pd.merge(demographic_pressure, african_countries, left_on='Country',  right_on='country', how='left')\n",
+					"demographic_pressure = demographic_pressure[demographic_pressure['iso3'].isin(african_countries['iso3'])]\n",
+					"demographic_pressure = demographic_pressure[['iso3', 'Country', 'Year', selected_col]]\n",
+					"demographic_pressure.columns = iri_col_names\n",
+					"demographic_pressure = demographic_pressure.drop_duplicates(subset=['iso3', 'year'], keep=\"first\")\n",
+					"\n",
+					"# Compute 'demographic_pressure_score'\n",
+					"demographic_pressure['demographic_pressure_score'] = 2 * demographic_pressure['value'] / 10\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"demographic_pressure['year'] = pd.to_numeric(demographic_pressure['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"demographic_pressure = demographic_pressure[demographic_pressure['year'] >= 2000]\n",
+					"\n",
+					"print(demographic_pressure.head())"
+				],
+				"execution_count": 44
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(demographic_pressure['name'], african_countries['country'])"
+				],
+				"execution_count": 45
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Socioenvironmental Pressures Index"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"\n",
+					"\n",
+					"def capture_original_variable_names(var_dict):\n",
+					"    df_values = [value for value in var_dict.values() if isinstance(value, pd.DataFrame)]\n",
+					"    matched_names = []\n",
+					"\n",
+					"    for name, obj in globals().items():\n",
+					"        if isinstance(obj, pd.DataFrame) and any(obj is val for val in df_values):\n",
+					"            matched_names.append(name)\n",
+					"\n",
+					"    return matched_names\n",
+					"\n",
+					"\n",
+					"\n",
+					"\n",
+					"# Dynamically passing variables\n",
+					"variables = {\n",
+					"    \"df1\": environmental_adaptation,\n",
+					"    \"df2\": youth_underdevelopment,\n",
+					"    \"df3\": illiteracy,\n",
+					"    \"df4\": human_flight,\n",
+					"    \"df5\": demographic_pressure\n",
+					"}\n",
+					"\n",
+					"df_values = [value for value in variables.values() if isinstance(value, pd.DataFrame)]\n",
+					"for name, obj in globals().items():\n",
+					"    if isinstance(obj, pd.DataFrame) and any(obj is val for val in df_values):\n",
+					"        print(name)\n",
+					""
+				],
+				"execution_count": 73
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"df_names = [name for name, obj in globals().items() if isinstance(obj, pd.DataFrame)]\n",
+					"print(df_names)"
+				],
+				"execution_count": 63
 			},
 			{
 				"cell_type": "markdown",
