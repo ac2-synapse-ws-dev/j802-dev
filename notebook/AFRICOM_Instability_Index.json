@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "27cb3e55-cab1-4e88-9cd0-288683a30289"
+				"spark.autotune.trackingId": "9d37eab0-f181-431c-bf1a-e0eaf1bf9f2b"
 			}
 		},
 		"metadata": {
@@ -374,7 +374,7 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 82
+				"execution_count": 107
 			},
 			{
 				"cell_type": "code",
@@ -835,7 +835,7 @@
 					"\n",
 					"print(inequality.head())"
 				],
-				"execution_count": 101
+				"execution_count": 106
 			},
 			{
 				"cell_type": "markdown",
@@ -853,9 +853,17 @@
 			{
 				"cell_type": "code",
 				"source": [
-					""
+					"# Read the CSV files\n",
+					"unemployment_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/ilo_unemployment_rate.csv'\n",
+					"unemployment = pd.read_csv(unemployment_path)\n",
+					"\n",
+					"\n",
+					"# # Filter for African countries\n",
+					"# unemployment = unemployment[unemployment['ISO3'].isin(african_countries['iso3'])]\n",
+					"\n",
+					"print(unemployment.head())"
 				],
-				"execution_count": null
+				"execution_count": 105
 			},
 			{
 				"cell_type": "markdown",
