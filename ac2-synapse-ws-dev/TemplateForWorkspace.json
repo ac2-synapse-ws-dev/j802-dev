@@ -1602,7 +1602,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "7ac09389-320f-423f-804b-5ccbf60657e3"
+						"spark.autotune.trackingId": "33db288f-f989-40f1-a7b6-3235406b8b36"
 					}
 				},
 				"metadata": {
@@ -1724,7 +1724,7 @@
 							"%pip install pymetalog"
 						],
 						"outputs": [],
-						"execution_count": 79
+						"execution_count": 108
 					},
 					{
 						"cell_type": "markdown",
@@ -1755,7 +1755,7 @@
 							"from datetime import datetime"
 						],
 						"outputs": [],
-						"execution_count": 80
+						"execution_count": 109
 					},
 					{
 						"cell_type": "markdown",
@@ -1859,7 +1859,7 @@
 							"    return percentiles"
 						],
 						"outputs": [],
-						"execution_count": 81
+						"execution_count": 110
 					},
 					{
 						"cell_type": "markdown",
@@ -1967,7 +1967,7 @@
 							"print(environmental_adaptation.head())"
 						],
 						"outputs": [],
-						"execution_count": 82
+						"execution_count": 144
 					},
 					{
 						"cell_type": "code",
@@ -1976,7 +1976,7 @@
 							"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 						],
 						"outputs": [],
-						"execution_count": 83
+						"execution_count": 147
 					},
 					{
 						"cell_type": "markdown",
@@ -2035,7 +2035,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 84
+						"execution_count": 145
 					},
 					{
 						"cell_type": "code",
@@ -2044,7 +2044,7 @@
 							"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 85
+						"execution_count": 146
 					},
 					{
 						"cell_type": "markdown",
@@ -2110,7 +2110,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 86
+						"execution_count": 148
 					},
 					{
 						"cell_type": "code",
@@ -2119,7 +2119,7 @@
 							"check_country_names(illiteracy['name'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 87
+						"execution_count": 149
 					},
 					{
 						"cell_type": "markdown",
@@ -2190,7 +2190,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 88
+						"execution_count": 150
 					},
 					{
 						"cell_type": "code",
@@ -2199,7 +2199,7 @@
 							"check_country_names(fsi_data['Country'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 89
+						"execution_count": 151
 					},
 					{
 						"cell_type": "markdown",
@@ -2237,7 +2237,7 @@
 							"print(human_flight.head())"
 						],
 						"outputs": [],
-						"execution_count": 90
+						"execution_count": 152
 					},
 					{
 						"cell_type": "markdown",
@@ -2274,7 +2274,7 @@
 							"print(demographic_pressure.head())"
 						],
 						"outputs": [],
-						"execution_count": 91
+						"execution_count": 153
 					},
 					{
 						"cell_type": "markdown",
@@ -2310,7 +2310,7 @@
 							"print(missing_iso)"
 						],
 						"outputs": [],
-						"execution_count": 92
+						"execution_count": 154
 					},
 					{
 						"cell_type": "markdown",
@@ -2346,7 +2346,7 @@
 							"ken_socio_pressures_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
 						],
 						"outputs": [],
-						"execution_count": 95
+						"execution_count": 155
 					},
 					{
 						"cell_type": "code",
@@ -2355,7 +2355,7 @@
 							"print(ken_socio_pressures_df)"
 						],
 						"outputs": [],
-						"execution_count": 96
+						"execution_count": 156
 					},
 					{
 						"cell_type": "markdown",
@@ -2380,7 +2380,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 98
+						"execution_count": 157
 					},
 					{
 						"cell_type": "code",
@@ -2389,7 +2389,7 @@
 							"pymetalog.summary(m)"
 						],
 						"outputs": [],
-						"execution_count": 99
+						"execution_count": 158
 					},
 					{
 						"cell_type": "code",
@@ -2398,7 +2398,7 @@
 							"pymetalog.plot(m)"
 						],
 						"outputs": [],
-						"execution_count": 100
+						"execution_count": 159
 					},
 					{
 						"cell_type": "markdown",
@@ -2459,7 +2459,7 @@
 							"print(inequality.head())"
 						],
 						"outputs": [],
-						"execution_count": 101
+						"execution_count": 160
 					},
 					{
 						"cell_type": "markdown",
@@ -2478,10 +2478,43 @@
 						"cell_type": "code",
 						"metadata": {},
 						"source": [
-							""
+							"# Read the CSV files\n",
+							"unemployment_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/ilo_unemployment_rate.csv'\n",
+							"unemployment = pd.read_csv(unemployment_path)\n",
+							"for country in african_countries['country']:\n",
+							"    if not unemployment['ref_area.label'].str.contains(country, case=False, na=False).any():\n",
+							"        print(country)"
 						],
 						"outputs": [],
-						"execution_count": null
+						"execution_count": 163
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"check_country_names(unemployment['ref_area.label'], african_countries['country'])"
+						],
+						"outputs": [],
+						"execution_count": 164
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"\n",
+							"unemployment_filtered = unemployment[unemployment['sex.label'] == 'Total']\n",
+							"unemployment = unemployment_filtered.groupby(['ref_area.label', 'time'])['obs_value'].mean().reset_index()\n",
+							"unemployment = unemployment[['ref_area.label', 'time', 'obs_value']].copy()\n",
+							"unemployment = pd.merge(unemployment, african_countries, left_on='ref_area.label',  right_on='country', how='left')\n",
+							"\n",
+							"\n",
+							"# Filter for African countries\n",
+							"#unemployment = unemployment[unemployment['ISO3'].isin(african_countries['iso3'])]\n",
+							"\n",
+							"print(unemployment.head())"
+						],
+						"outputs": [],
+						"execution_count": 161
 					},
 					{
 						"cell_type": "markdown",
