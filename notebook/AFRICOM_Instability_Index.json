@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "bd60c997-c1fb-4d6e-9c89-c6241aa52c33"
+				"spark.autotune.trackingId": "27cb3e55-cab1-4e88-9cd0-288683a30289"
 			}
 		},
 		"metadata": {
@@ -137,7 +137,7 @@
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 1
+				"execution_count": 79
 			},
 			{
 				"cell_type": "markdown",
@@ -166,7 +166,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 2
+				"execution_count": 80
 			},
 			{
 				"cell_type": "markdown",
@@ -268,7 +268,7 @@
 					"    percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
 					"    return percentiles"
 				],
-				"execution_count": 54
+				"execution_count": 81
 			},
 			{
 				"cell_type": "markdown",
@@ -374,14 +374,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 4
+				"execution_count": 82
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 5
+				"execution_count": 83
 			},
 			{
 				"cell_type": "markdown",
@@ -438,14 +438,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": 84
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 7
+				"execution_count": 85
 			},
 			{
 				"cell_type": "markdown",
@@ -510,14 +510,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 8
+				"execution_count": 86
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 9
+				"execution_count": 87
 			},
 			{
 				"cell_type": "markdown",
@@ -586,14 +586,14 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 16
+				"execution_count": 88
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(fsi_data['Country'], african_countries['country'])"
 				],
-				"execution_count": 17
+				"execution_count": 89
 			},
 			{
 				"cell_type": "markdown",
@@ -629,7 +629,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 21
+				"execution_count": 90
 			},
 			{
 				"cell_type": "markdown",
@@ -664,7 +664,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 24
+				"execution_count": 91
 			},
 			{
 				"cell_type": "markdown",
@@ -698,7 +698,7 @@
 					"        missing_iso[iso].append('demographic_pressure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 51
+				"execution_count": 92
 			},
 			{
 				"cell_type": "markdown",
@@ -730,16 +730,16 @@
 				"cell_type": "code",
 				"source": [
 					"country_iso = \"KEN\"\n",
-					"ken_index_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
+					"ken_socio_pressures_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
 				],
-				"execution_count": 55
+				"execution_count": 95
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"print(index_df)"
+					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 56
+				"execution_count": 96
 			},
 			{
 				"cell_type": "markdown",
@@ -757,26 +757,26 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"percentiles = compute_estimate_percentiles(ken_index_df)\n",
+					"percentiles = compute_estimate_percentiles(ken_socio_pressures_df)\n",
 					"m = pymetalog.metalog(percentiles, boundedness='b', bounds=[0, 1], term_limit=3)\n",
 					"\n",
 					""
 				],
-				"execution_count": 57
+				"execution_count": 98
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 58
+				"execution_count": 99
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 59
+				"execution_count": 100
 			},
 			{
 				"cell_type": "markdown",
@@ -792,13 +792,13 @@
 					"\n",
 					"| Data Source | URL | Indicator Domain | Notes |\n",
 					"|-------------|-----|------------------|-------|\n",
-					"| Notre Dame Global Adaptation Initiative (ND-GAIN) [4]    | <https://gain.nd.edu/our-work/country-index/download-data/> | Socioenvironmental Pressures | Annual Update |\n",
-					"| The Commonwealth - Global Youth Index [5]    | <https://cwapiservices.thecommonwealth.org/index.html> | Socioenvironmental Pressures | Annual Update |\n",
-					"| World Bank Literacy Rates [6]    | <https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true> | Socioenvironmental Pressures | Replacement for the United Nations Human Development Report -Education Index Score |\n",
-					"| Fragile State Index—Human Flight and Brain Drain score [7]    | <https://fragilestatesindex.org/indicators/e3/> | Socioenvironmental Pressures | Annual Update |\n",
-					"| Fragile State Index—Demographic Pressures score [7]   | <https://fragilestatesindex.org/indicators/s1/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Fragile State Index—Inequality score [7]    | <https://fragilestatesindex.org/indicators/e2/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| International Labor Organization—Unemployment Total (% of total labor force) [8]    | <https://ilostat.ilo.org/topics/unemployment-and-labour-underutilization/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Fragile State Index—Group Grievance score [7]    | <https://fragilestatesindex.org/indicators/c3/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Fragile State Index—Refugees and IDPs score [7]    | <https://fragilestatesindex.org/indicators/s2/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Mo Ibrahim Index-Infrastructure score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
 					"\n",
-					"Table of IRI Social Cohesion Datasources\n",
+					"Table of IRI Group Grievances Datasources\n",
 					""
 				]
 			},
@@ -812,7 +812,145 @@
 					}
 				},
 				"source": [
-					"### "
+					"#### Inequality (E2)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Extract appropriate column and format the rest of the data\n",
+					"selected_col = 'E2: Economic Inequality'\n",
+					"inequality = fsi_data[['iso3', 'Country', 'Year', selected_col]].copy()\n",
+					"inequality.columns = iri_col_names\n",
+					"\n",
+					"\n",
+					"# Compute 'inequality_score'\n",
+					"inequality['inequality_score'] = 2 * inequality['value'] / 10\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"inequality['year'] = pd.to_numeric(inequality['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"inequality = inequality[inequality['year'] >= 2000]\n",
+					"\n",
+					"print(inequality.head())"
+				],
+				"execution_count": 101
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Unemployment"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Group Grievance (C3)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Extract appropriate column and format the rest of the data\n",
+					"selected_col = 'C3: Group Grievance'\n",
+					"group_grievance = fsi_data[['iso3', 'Country', 'Year', selected_col]].copy()\n",
+					"group_grievance.columns = iri_col_names\n",
+					"\n",
+					"\n",
+					"# Compute 'group_grievance_score'\n",
+					"group_grievance['group_grievance_score'] = 2 * group_grievance['value'] / 10\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"group_grievance['year'] = pd.to_numeric(group_grievance['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"group_grievance = group_grievance[group_grievance['year'] >= 2000]\n",
+					"\n",
+					"print(group_grievance.head())"
+				],
+				"execution_count": 102
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Refugees and IDPs (S2)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Extract appropriate column and format the rest of the data\n",
+					"selected_col = 'S2: Refugees and IDPs'\n",
+					"refugees = fsi_data[['iso3', 'Country', 'Year', selected_col]].copy()\n",
+					"refugees.columns = iri_col_names\n",
+					"\n",
+					"\n",
+					"# Compute 'refugees_score'\n",
+					"refugees['refugees_score'] = 2 * refugees['value'] / 10\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"refugees['year'] = pd.to_numeric(refugees['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"refugees = refugees[refugees['year'] >= 2000]\n",
+					"\n",
+					"print(refugees.head())"
+				],
+				"execution_count": 103
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Infrastructure"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Group Grievances Index"
 				]
 			},
 			{
@@ -841,7 +979,9 @@
 					"\n",
 					"[7] The Fund for Peace. (2022). *Fragile State Index*. https://fragilestatesindex.org/excel/\n",
 					"\n",
-					"[8] Next Reference\n",
+					"[8] International Labor Organization (2025). *Unemployment and Labor Underutilization*. https://ilostat.ilo.org/topics/unemployment-and-labour-underutilization/\n",
+					"\n",
+					"[9] Mo Ibrahim Foundation (2025). *Ibrahim Index of African Governance (IIAG)*. https://mo.ibrahim.foundation/our-research/iiag\n",
 					"\n",
 					""
 				]
