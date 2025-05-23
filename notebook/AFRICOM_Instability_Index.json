@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "f2bb44e4-5599-4ced-95af-75d4438fb48a"
+				"spark.autotune.trackingId": "bd60c997-c1fb-4d6e-9c89-c6241aa52c33"
 			}
 		},
 		"metadata": {
@@ -137,7 +137,7 @@
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 185
+				"execution_count": 1
 			},
 			{
 				"cell_type": "markdown",
@@ -166,7 +166,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 203
+				"execution_count": 2
 			},
 			{
 				"cell_type": "markdown",
@@ -238,9 +238,37 @@
 					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
 					"    index_df = index_df[['iso3', 'name', 'year', 'domain_score']]\n",
 					"\n",
-					"    return index_df"
+					"    return index_df\n",
+					"\n",
+					"def compute_estimate_percentiles(index_df):\n",
+					"    start_year = max(index_df['year']) + 1\n",
+					"    end_year = datetime.now().year\n",
+					"\n",
+					"\n",
+					"    # Fit ARIMA model\n",
+					"    model = ARIMA(index_df['domain_score'], order=(1, 1, 1))\n",
+					"    model_fit = model.fit()\n",
+					"\n",
+					"    # Forecast from start_year to end_year\n",
+					"    forecast = model_fit.get_forecast(steps=3)\n",
+					"    forecast_index = list(range(start_year, end_year + 1))\n",
+					"    forecast_df = pd.DataFrame({\n",
+					"        'year': forecast_index,\n",
+					"        'forecast': forecast.predicted_mean,\n",
+					"        'lower_ci': forecast.conf_int(alpha=0.10).iloc[:, 0],\n",
+					"        'upper_ci': forecast.conf_int(alpha=0.10).iloc[:, 1]\n",
+					"    })\n",
+					"\n",
+					"    #Extract the 10-50-90 values for a metalog distribution\n",
+					"    forecast_end_year = forecast_df[forecast_df['year'] == end_year]\n",
+					"    forecast_value = forecast_end_year['forecast'].values[0]\n",
+					"    lower_ci_end_year = forecast_end_year['lower_ci'].values[0]\n",
+					"    upper_ci_end_year = forecast_end_year['upper_ci'].values[0]\n",
+					"\n",
+					"    percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
+					"    return percentiles"
 				],
-				"execution_count": 187
+				"execution_count": 54
 			},
 			{
 				"cell_type": "markdown",
@@ -256,17 +284,7 @@
 					"\n",
 					"USAFRICOM should collect new data on an annual basis since most of these data sources are updated on that cycle.\n",
 					"\n",
-					"## Social Cohesion Data\n",
-					"\n",
-					"| Data Source | URL | Indicator Domain | Notes |\n",
-					"|-------------|-----|------------------|-------|\n",
-					"| Notre Dame Global Adaptation Initiative (ND-GAIN) [4]    | <https://gain.nd.edu/our-work/country-index/download-data/> | Socioenvironmental Pressures | Annual Update |\n",
-					"| The Commonwealth - Global Youth Index [5]    | <https://cwapiservices.thecommonwealth.org/index.html> | Socioenvironmental Pressures | Annual Update |\n",
-					"| World Bank Literacy Rates [6]    | <https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true> | Socioenvironmental Pressures | Replacement for the United Nations Human Development Report -Education Index Score |\n",
-					"| Fragile State Index—Human Flight and Brain Drain score [7]    | <https://fragilestatesindex.org/indicators/e3/> | Socioenvironmental Pressures | Annual Update |\n",
-					"| Fragile State Index—Demographic Pressures score [7]   | <https://fragilestatesindex.org/indicators/s1/> | Socioenvironmental Pressures | Annual Update |\n",
-					"\n",
-					"Table of IRI Social Cohesion Datasources\n",
+					"## Social Cohesion Domain\n",
 					""
 				]
 			},
@@ -280,7 +298,18 @@
 					}
 				},
 				"source": [
-					"## Socioenvironmental Pressures Domain"
+					"### Socioenvironmental Pressures Subdomain\n",
+					"\n",
+					"| Data Source | URL | Indicator Domain | Notes |\n",
+					"|-------------|-----|------------------|-------|\n",
+					"| Notre Dame Global Adaptation Initiative (ND-GAIN) [4]    | <https://gain.nd.edu/our-work/country-index/download-data/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| The Commonwealth - Global Youth Index [5]    | <https://cwapiservices.thecommonwealth.org/index.html> | Socioenvironmental Pressures | Annual Update |\n",
+					"| World Bank Literacy Rates [6]    | <https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true> | Socioenvironmental Pressures | Replacement for the United Nations Human Development Report -Education Index Score |\n",
+					"| Fragile State Index—Human Flight and Brain Drain score [7]    | <https://fragilestatesindex.org/indicators/e3/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Fragile State Index—Demographic Pressures score [7]   | <https://fragilestatesindex.org/indicators/s1/> | Socioenvironmental Pressures | Annual Update |\n",
+					"\n",
+					"Table of IRI Socioenvironmental Datasources\n",
+					""
 				]
 			},
 			{
@@ -293,7 +322,7 @@
 					}
 				},
 				"source": [
-					"### ND-Gain\n",
+					"#### ND-Gain\n",
 					"\n",
 					"This dataset comes in a zip file containing multiple file. The required file to build the IRI is called `resources/gain/gain.csv`. After downloading the file, I renamed it to `nd_gain_country_index_2024.csv`."
 				]
@@ -345,14 +374,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 188
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 189
+				"execution_count": 5
 			},
 			{
 				"cell_type": "markdown",
@@ -364,7 +393,7 @@
 					}
 				},
 				"source": [
-					"### Commonwealth Youth Index"
+					"#### Commonwealth Youth Index"
 				]
 			},
 			{
@@ -409,14 +438,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 190
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 191
+				"execution_count": 7
 			},
 			{
 				"cell_type": "markdown",
@@ -428,7 +457,7 @@
 					}
 				},
 				"source": [
-					"### Illiteracy"
+					"#### Illiteracy"
 				]
 			},
 			{
@@ -481,14 +510,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 192
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 193
+				"execution_count": 9
 			},
 			{
 				"cell_type": "markdown",
@@ -500,7 +529,7 @@
 					}
 				},
 				"source": [
-					"### Fragile State Index Data"
+					"#### Fragile State Index Data"
 				]
 			},
 			{
@@ -548,12 +577,23 @@
 					"\n",
 					"fsi_data = fsi_data.toPandas()\n",
 					"fsi_data[\"Year\"] = fsi_data[\"Year\"].fillna(0).astype(int)\n",
+					"fsi_data = pd.merge(fsi_data, african_countries, left_on='Country',  right_on='country', how='left')\n",
+					"fsi_data = fsi_data.dropna(subset = ['iso3'])\n",
+					"fsi_data = fsi_data.drop_duplicates(subset=['iso3', 'Year'], keep=\"first\")\n",
+					"fsi_data.loc[fsi_data['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
 					"\n",
 					"\n",
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 194
+				"execution_count": 16
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(fsi_data['Country'], african_countries['country'])"
+				],
+				"execution_count": 17
 			},
 			{
 				"cell_type": "markdown",
@@ -565,7 +605,7 @@
 					}
 				},
 				"source": [
-					"### Human Flight (FSI E3)\n",
+					"#### Human Flight (FSI E3)\n",
 					"\n",
 					"This is a subsection of the `fsi` dataset, thus a similar methodology will be used for other `fsi` subsets."
 				]
@@ -575,13 +615,8 @@
 				"source": [
 					"#Extract appropriate column and format the rest of the data\n",
 					"selected_col = 'E3: Human Flight and Brain Drain'\n",
-					"human_flight = fsi_data[['Country', 'Year', selected_col]]\n",
-					"human_flight.loc[human_flight['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
-					"human_flight = pd.merge(human_flight, african_countries, left_on='Country',  right_on='country', how='left')\n",
-					"human_flight = human_flight[human_flight['iso3'].isin(african_countries['iso3'])]\n",
-					"human_flight = human_flight[['iso3', 'Country', 'Year', selected_col]]\n",
+					"human_flight = fsi_data[['iso3','Country', 'Year', selected_col]].copy()\n",
 					"human_flight.columns = iri_col_names\n",
-					"human_flight = human_flight.drop_duplicates(subset=['iso3', 'year'], keep=\"first\")\n",
 					"\n",
 					"# Compute 'human_flight_score'\n",
 					"human_flight['human_flight_score'] = 2 * human_flight['value'] / 10\n",
@@ -594,14 +629,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 195
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"check_country_names(human_flight['name'], african_countries['country'])"
-				],
-				"execution_count": 196
+				"execution_count": 21
 			},
 			{
 				"cell_type": "markdown",
@@ -613,7 +641,7 @@
 					}
 				},
 				"source": [
-					"### Demographic Pressures (S1)"
+					"#### Demographic Pressures (S1)"
 				]
 			},
 			{
@@ -621,13 +649,9 @@
 				"source": [
 					"#Extract appropriate column and format the rest of the data\n",
 					"selected_col = 'S1: Demographic Pressures'\n",
-					"demographic_pressure = fsi_data[['Country', 'Year', selected_col]]\n",
-					"demographic_pressure.loc[demographic_pressure['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
-					"demographic_pressure = pd.merge(demographic_pressure, african_countries, left_on='Country',  right_on='country', how='left')\n",
-					"demographic_pressure = demographic_pressure[demographic_pressure['iso3'].isin(african_countries['iso3'])]\n",
-					"demographic_pressure = demographic_pressure[['iso3', 'Country', 'Year', selected_col]]\n",
+					"demographic_pressure = fsi_data[['iso3', 'Country', 'Year', selected_col]].copy()\n",
 					"demographic_pressure.columns = iri_col_names\n",
-					"demographic_pressure = demographic_pressure.drop_duplicates(subset=['iso3', 'year'], keep=\"first\")\n",
+					"\n",
 					"\n",
 					"# Compute 'demographic_pressure_score'\n",
 					"demographic_pressure['demographic_pressure_score'] = 2 * demographic_pressure['value'] / 10\n",
@@ -640,14 +664,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 197
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"check_country_names(demographic_pressure['name'], african_countries['country'])"
-				],
-				"execution_count": 198
+				"execution_count": 24
 			},
 			{
 				"cell_type": "markdown",
@@ -659,71 +676,131 @@
 					}
 				},
 				"source": [
-					"### Socioenvironmental Pressures Index"
+					"#### Socioenvironmental Pressures Index"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Check to see if all countries are accounted for in all datasets\n",
+					"missing_iso = {}\n",
+					"for iso in african_countries['iso3']:\n",
+					"    missing_iso[iso] = []\n",
+					"    if not any(environmental_adaptation['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('environmental_adaptation')\n",
+					"    if not any(youth_underdevelopment['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('youth_underdevelopment')\n",
+					"    if not any(illiteracy['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('illiteracy')\n",
+					"    if not any(human_flight['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('human_flight')\n",
+					"    if not any(demographic_pressure['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('demographic_pressure')\n",
+					"print(missing_iso)"
+				],
+				"execution_count": 51
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"According to the above check for a country missing in the five datasets, we will not be able to compute a complete index for DJI, EGY, GMB, GNB, LBY, and SSD."
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Kenya Example"
 				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"country_iso = \"KEN\"\n",
-					"index_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
+					"ken_index_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
 				],
-				"execution_count": 199
+				"execution_count": 55
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(index_df)"
 				],
-				"execution_count": 200
+				"execution_count": 56
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"This section demonstrates how to "
+				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"start_year = max(index_df['year']) + 1\n",
-					"end_year = datetime.now().year\n",
-					"print((start_year, end_year))\n",
-					"\n",
-					"# Fit ARIMA model\n",
-					"model = ARIMA(index_df['domain_score'], order=(1, 1, 1))\n",
-					"model_fit = model.fit()\n",
-					"\n",
-					"# Forecast from start_year to end_year\n",
-					"forecast = model_fit.get_forecast(steps=3)\n",
-					"forecast_index = list(range(2023, 2026))\n",
-					"forecast_df = pd.DataFrame({\n",
-					"    'year': forecast_index,\n",
-					"    'forecast': forecast.predicted_mean,\n",
-					"    'lower_ci': forecast.conf_int(alpha=0.10).iloc[:, 0],\n",
-					"    'upper_ci': forecast.conf_int(alpha=0.10).iloc[:, 1]\n",
-					"})\n",
-					"\n",
-					"#Extract the 10-50-90 values for a metalog distribution\n",
-					"forecast_end_year = forecast_df[forecast_df['year'] == end_year]\n",
-					"forecast_value = forecast_end_year['forecast'].values[0]\n",
-					"lower_ci_end_year = forecast_end_year['lower_ci'].values[0]\n",
-					"upper_ci_end_year = forecast_end_year['upper_ci'].values[0]\n",
-					"\n",
-					"percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
+					"percentiles = compute_estimate_percentiles(ken_index_df)\n",
 					"m = pymetalog.metalog(percentiles, boundedness='b', bounds=[0, 1], term_limit=3)\n",
 					"\n",
 					""
 				],
-				"execution_count": 210
+				"execution_count": 57
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 213
+				"execution_count": 58
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 219
+				"execution_count": 59
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Group Grievances Subdomain\n",
+					"\n",
+					"| Data Source | URL | Indicator Domain | Notes |\n",
+					"|-------------|-----|------------------|-------|\n",
+					"| Notre Dame Global Adaptation Initiative (ND-GAIN) [4]    | <https://gain.nd.edu/our-work/country-index/download-data/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| The Commonwealth - Global Youth Index [5]    | <https://cwapiservices.thecommonwealth.org/index.html> | Socioenvironmental Pressures | Annual Update |\n",
+					"| World Bank Literacy Rates [6]    | <https://data.worldbank.org/indicator/SE.ADT.LITR.ZS?most_recent_value_desc=true> | Socioenvironmental Pressures | Replacement for the United Nations Human Development Report -Education Index Score |\n",
+					"| Fragile State Index—Human Flight and Brain Drain score [7]    | <https://fragilestatesindex.org/indicators/e3/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| Fragile State Index—Demographic Pressures score [7]   | <https://fragilestatesindex.org/indicators/s1/> | Socioenvironmental Pressures | Annual Update |\n",
+					"\n",
+					"Table of IRI Social Cohesion Datasources\n",
+					""
+				]
 			},
 			{
 				"cell_type": "markdown",
