@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2fe9847b-17c3-49cc-8ab7-e1f95bb330de"
+				"spark.autotune.trackingId": "2970f4b1-56eb-4003-b456-571297ecee46"
 			}
 		},
 		"metadata": {
@@ -134,10 +134,11 @@
 			{
 				"cell_type": "code",
 				"source": [
+					"%pip install --upgrade pip\n",
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 108
+				"execution_count": 1
 			},
 			{
 				"cell_type": "markdown",
@@ -166,7 +167,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 109
+				"execution_count": 2
 			},
 			{
 				"cell_type": "markdown",
@@ -268,7 +269,7 @@
 					"    percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
 					"    return percentiles"
 				],
-				"execution_count": 110
+				"execution_count": 3
 			},
 			{
 				"cell_type": "markdown",
@@ -330,6 +331,13 @@
 			{
 				"cell_type": "code",
 				"source": [
+					"print(african_countries.head())"
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"source": [
 					"\n",
 					"# Define the column names\n",
 					"iri_col_names = [\"iso3\", \"name\", \"year\", \"value\"]\n",
@@ -340,7 +348,6 @@
 					"environmental_adaptation = pd.read_csv(environmental_adaptation_path)\n",
 					"\n",
 					"african_countries = pd.read_csv(african_countries_path)\n",
-					"african_countries.loc[african_countries['country'] == \"Côte d'Ivoire\", 'country'] = \"Cote d'Ivoire\"\n",
 					"\n",
 					"# Filter for African countries\n",
 					"environmental_adaptation = environmental_adaptation[environmental_adaptation['ISO3'].isin(african_countries['iso3'])]\n",
@@ -374,7 +381,7 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 144
+				"execution_count": 27
 			},
 			{
 				"cell_type": "code",
@@ -438,7 +445,7 @@
 					"\n",
 					""
 				],
-				"execution_count": 145
+				"execution_count": 5
 			},
 			{
 				"cell_type": "code",
@@ -510,7 +517,7 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 148
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
@@ -581,19 +588,20 @@
 					"fsi_data = fsi_data.dropna(subset = ['iso3'])\n",
 					"fsi_data = fsi_data.drop_duplicates(subset=['iso3', 'Year'], keep=\"first\")\n",
 					"fsi_data.loc[fsi_data['Country'] == 'Congo Democratic Republic', 'Country'] = 'Democratic Republic of the Congo'\n",
+					"fsi_data.loc[fsi_data['Country'] == 'Congo Republic', 'Country'] = 'Republic of the Congo'\n",
 					"\n",
 					"\n",
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 150
+				"execution_count": 56
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(fsi_data['Country'], african_countries['country'])"
 				],
-				"execution_count": 151
+				"execution_count": 57
 			},
 			{
 				"cell_type": "markdown",
@@ -629,7 +637,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 152
+				"execution_count": 58
 			},
 			{
 				"cell_type": "markdown",
@@ -664,7 +672,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 153
+				"execution_count": 59
 			},
 			{
 				"cell_type": "markdown",
@@ -698,7 +706,7 @@
 					"        missing_iso[iso].append('demographic_pressure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 154
+				"execution_count": 60
 			},
 			{
 				"cell_type": "markdown",
@@ -730,16 +738,17 @@
 				"cell_type": "code",
 				"source": [
 					"country_iso = \"KEN\"\n",
-					"ken_socio_pressures_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)"
+					"ken_socio_pressures_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)\n",
+					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 155
+				"execution_count": 61
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 156
+				"execution_count": 62
 			},
 			{
 				"cell_type": "markdown",
@@ -762,21 +771,21 @@
 					"\n",
 					""
 				],
-				"execution_count": 157
+				"execution_count": 63
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 158
+				"execution_count": 64
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 159
+				"execution_count": 65
 			},
 			{
 				"cell_type": "markdown",
@@ -793,7 +802,7 @@
 					"| Data Source | URL | Indicator Domain | Notes |\n",
 					"|-------------|-----|------------------|-------|\n",
 					"| Fragile State Index—Inequality score [7]    | <https://fragilestatesindex.org/indicators/e2/> | Socioenvironmental Pressures | Annual Update |\n",
-					"| International Labor Organization—Unemployment Total (% of total labor force) [8]    | <https://ilostat.ilo.org/topics/unemployment-and-labour-underutilization/> | Socioenvironmental Pressures | Annual Update |\n",
+					"| International Labor Organization—Unemployment Total (% of total labor force) [8]    | <https://data.worldbank.org/indicator/SL.UEM.TOTL.ZS> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Fragile State Index—Group Grievance score [7]    | <https://fragilestatesindex.org/indicators/c3/> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Fragile State Index—Refugees and IDPs score [7]    | <https://fragilestatesindex.org/indicators/s2/> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Mo Ibrahim Index-Infrastructure score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
@@ -835,7 +844,7 @@
 					"\n",
 					"print(inequality.head())"
 				],
-				"execution_count": 160
+				"execution_count": 66
 			},
 			{
 				"cell_type": "markdown",
@@ -854,37 +863,42 @@
 				"cell_type": "code",
 				"source": [
 					"# Read the CSV files\n",
-					"unemployment_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/ilo_unemployment_rate.csv'\n",
-					"unemployment = pd.read_csv(unemployment_path)\n",
-					"for country in african_countries['country']:\n",
-					"    if not unemployment['ref_area.label'].str.contains(country, case=False, na=False).any():\n",
-					"        print(country)"
-				],
-				"execution_count": 163
-			},
-			{
-				"cell_type": "code",
-				"source": [
-					"check_country_names(unemployment['ref_area.label'], african_countries['country'])"
-				],
-				"execution_count": 164
-			},
-			{
-				"cell_type": "code",
-				"source": [
+					"unemployment_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/ilo_unemployment_rate_wb.csv'\n",
+					"unemployment = pd.read_csv(unemployment_path, skiprows=4)\n",
+					"unemployment.loc[unemployment['Country Name'] == 'Congo, Rep.', 'Country Name'] = 'Republic of the Congo'\n",
+					"unemployment.loc[unemployment['Country Name'] == 'Congo, Dem. Rep.', 'Country Name'] = 'Democratic Republic of the Congo'\n",
+					"unemployment.loc[unemployment['Country Name'] == 'Egypt, Arab Rep.', 'Country Name'] = 'Egypt'\n",
+					"unemployment.loc[unemployment['Country Name'] == 'Gambia, The', 'Country Name'] = 'Gambia'\n",
+					"unemployment = unemployment.drop(columns=['Indicator Name', 'Indicator Code', 'Unnamed: 69'], errors='ignore')\n",
+					"unemployment = unemployment.melt(id_vars=['Country Name', 'Country Code'],\n",
+					"                  var_name='year',\n",
+					"                  value_name='unemployment_rate')\n",
+					"unemployment = unemployment.dropna(subset=['unemployment_rate'])\n",
+					"unemployment = unemployment[unemployment['Country Code'].isin(african_countries['iso3'])]\n",
 					"\n",
-					"unemployment_filtered = unemployment[unemployment['sex.label'] == 'Total']\n",
-					"unemployment = unemployment_filtered.groupby(['ref_area.label', 'time'])['obs_value'].mean().reset_index()\n",
-					"unemployment = unemployment[['ref_area.label', 'time', 'obs_value']].copy()\n",
-					"unemployment = pd.merge(unemployment, african_countries, left_on='ref_area.label',  right_on='country', how='left')\n",
+					"# Rename and reorder columns\n",
+					"unemployment = unemployment[['Country Code', 'Country Name', 'year', 'unemployment_rate']].copy()\n",
+					"unemployment.columns = iri_col_names\n",
 					"\n",
+					"# Compute 'human_flight_score'\n",
+					"unemployment['unemployment_score'] = 2 * unemployment['value'] / 100\n",
 					"\n",
-					"# Filter for African countries\n",
-					"#unemployment = unemployment[unemployment['ISO3'].isin(african_countries['iso3'])]\n",
+					"# Convert 'year' to numeric\n",
+					"unemployment['year'] = pd.to_numeric(unemployment['year'])\n",
+					"\n",
+					"# Filter for years >= 2000\n",
+					"unemployment = unemployment[unemployment['year'] >= 2000]\n",
 					"\n",
 					"print(unemployment.head())"
 				],
-				"execution_count": 161
+				"execution_count": 67
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(unemployment['name'], african_countries['country'])"
+				],
+				"execution_count": 68
 			},
 			{
 				"cell_type": "markdown",
@@ -919,7 +933,7 @@
 					"\n",
 					"print(group_grievance.head())"
 				],
-				"execution_count": 102
+				"execution_count": 69
 			},
 			{
 				"cell_type": "markdown",
@@ -954,7 +968,27 @@
 					"\n",
 					"print(refugees.head())"
 				],
-				"execution_count": 103
+				"execution_count": 71
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Mo Ibrahim Foundation Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"iiag_df_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/iiag_data/2024-IIAG-scores.xlsx'"
+				],
+				"execution_count": null
 			},
 			{
 				"cell_type": "markdown",
@@ -1008,7 +1042,7 @@
 					"\n",
 					"[7] The Fund for Peace. (2022). *Fragile State Index*. https://fragilestatesindex.org/excel/\n",
 					"\n",
-					"[8] International Labor Organization (2025). *Unemployment and Labor Underutilization*. https://ilostat.ilo.org/topics/unemployment-and-labour-underutilization/\n",
+					"[8] International Labor Organization (2025). *Unemployment and Labor Underutilization*. https://data.worldbank.org/indicator/SL.UEM.TOTL.ZS\n",
 					"\n",
 					"[9] Mo Ibrahim Foundation (2025). *Ibrahim Index of African Governance (IIAG)*. https://mo.ibrahim.foundation/our-research/iiag\n",
 					"\n",
