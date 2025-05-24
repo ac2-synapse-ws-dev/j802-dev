@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2970f4b1-56eb-4003-b456-571297ecee46"
+				"spark.autotune.trackingId": "e4ef65d9-e2ee-4ea9-8f06-93a9914e51f4"
 			}
 		},
 		"metadata": {
@@ -138,7 +138,7 @@
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 1
+				"execution_count": 75
 			},
 			{
 				"cell_type": "markdown",
@@ -167,7 +167,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 2
+				"execution_count": 76
 			},
 			{
 				"cell_type": "markdown",
@@ -269,7 +269,7 @@
 					"    percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
 					"    return percentiles"
 				],
-				"execution_count": 3
+				"execution_count": 77
 			},
 			{
 				"cell_type": "markdown",
@@ -331,13 +331,6 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"print(african_countries.head())"
-				],
-				"execution_count": 26
-			},
-			{
-				"cell_type": "code",
-				"source": [
 					"\n",
 					"# Define the column names\n",
 					"iri_col_names = [\"iso3\", \"name\", \"year\", \"value\"]\n",
@@ -377,18 +370,18 @@
 					"environmental_adaptation['year'] = pd.to_numeric(environmental_adaptation['year'])\n",
 					"\n",
 					"# Filter for years >= 2000\n",
-					"environmental_adaptation = environmental_adaptation[environmental_adaptation['year'] >= 2000]\n",
+					"environmental_adaptation = environmental_adaptation[environmental_adaptation['year'] >= 2013]\n",
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 27
+				"execution_count": 110
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 147
+				"execution_count": 80
 			},
 			{
 				"cell_type": "markdown",
@@ -438,21 +431,21 @@
 					"# Convert 'year' to numeric\n",
 					"youth_underdevelopment['year'] = pd.to_numeric(youth_underdevelopment['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['year'] >= 2000]\n",
+					"# Filter for years >= 2013\n",
+					"youth_underdevelopment = youth_underdevelopment[youth_underdevelopment['year'] >= 2013]\n",
 					"\n",
 					"print(youth_underdevelopment.head())\n",
 					"\n",
 					""
 				],
-				"execution_count": 5
+				"execution_count": 111
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 146
+				"execution_count": 82
 			},
 			{
 				"cell_type": "markdown",
@@ -510,21 +503,21 @@
 					"# Convert 'year' to numeric\n",
 					"illiteracy['year'] = pd.to_numeric(illiteracy['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"illiteracy = illiteracy[illiteracy['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"illiteracy = illiteracy[illiteracy['year'] >=2013]\n",
 					"\n",
 					"\n",
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": 112
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 149
+				"execution_count": 84
 			},
 			{
 				"cell_type": "markdown",
@@ -594,14 +587,14 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 56
+				"execution_count": 85
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(fsi_data['Country'], african_countries['country'])"
 				],
-				"execution_count": 57
+				"execution_count": 86
 			},
 			{
 				"cell_type": "markdown",
@@ -632,12 +625,12 @@
 					"# Convert 'year' to numeric\n",
 					"human_flight['year'] = pd.to_numeric(human_flight['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"human_flight = human_flight[human_flight['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"human_flight = human_flight[human_flight['year'] >=2013]\n",
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 58
+				"execution_count": 113
 			},
 			{
 				"cell_type": "markdown",
@@ -667,12 +660,12 @@
 					"# Convert 'year' to numeric\n",
 					"demographic_pressure['year'] = pd.to_numeric(demographic_pressure['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"demographic_pressure = demographic_pressure[demographic_pressure['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"demographic_pressure = demographic_pressure[demographic_pressure['year'] >=2013]\n",
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 59
+				"execution_count": 114
 			},
 			{
 				"cell_type": "markdown",
@@ -706,7 +699,7 @@
 					"        missing_iso[iso].append('demographic_pressure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 60
+				"execution_count": 115
 			},
 			{
 				"cell_type": "markdown",
@@ -739,16 +732,17 @@
 				"source": [
 					"country_iso = \"KEN\"\n",
 					"ken_socio_pressures_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)\n",
+					"ken_socio_pressures_df.sort_values(by='year', inplace=True)\n",
 					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 61
+				"execution_count": 132
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 62
+				"execution_count": 133
 			},
 			{
 				"cell_type": "markdown",
@@ -771,21 +765,21 @@
 					"\n",
 					""
 				],
-				"execution_count": 63
+				"execution_count": 118
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 64
+				"execution_count": 119
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 65
+				"execution_count": 120
 			},
 			{
 				"cell_type": "markdown",
@@ -839,12 +833,12 @@
 					"# Convert 'year' to numeric\n",
 					"inequality['year'] = pd.to_numeric(inequality['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"inequality = inequality[inequality['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"inequality = inequality[inequality['year'] >=2013]\n",
 					"\n",
 					"print(inequality.head())"
 				],
-				"execution_count": 66
+				"execution_count": 121
 			},
 			{
 				"cell_type": "markdown",
@@ -886,19 +880,19 @@
 					"# Convert 'year' to numeric\n",
 					"unemployment['year'] = pd.to_numeric(unemployment['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"unemployment = unemployment[unemployment['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"unemployment = unemployment[unemployment['year'] >=2013]\n",
 					"\n",
 					"print(unemployment.head())"
 				],
-				"execution_count": 67
+				"execution_count": 122
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(unemployment['name'], african_countries['country'])"
 				],
-				"execution_count": 68
+				"execution_count": 124
 			},
 			{
 				"cell_type": "markdown",
@@ -928,12 +922,12 @@
 					"# Convert 'year' to numeric\n",
 					"group_grievance['year'] = pd.to_numeric(group_grievance['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"group_grievance = group_grievance[group_grievance['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"group_grievance = group_grievance[group_grievance['year'] >=2013]\n",
 					"\n",
 					"print(group_grievance.head())"
 				],
-				"execution_count": 69
+				"execution_count": 125
 			},
 			{
 				"cell_type": "markdown",
@@ -963,12 +957,12 @@
 					"# Convert 'year' to numeric\n",
 					"refugees['year'] = pd.to_numeric(refugees['year'])\n",
 					"\n",
-					"# Filter for years >= 2000\n",
-					"refugees = refugees[refugees['year'] >= 2000]\n",
+					"# Filter for years >=2013\n",
+					"refugees = refugees[refugees['year'] >=2013]\n",
 					"\n",
 					"print(refugees.head())"
 				],
-				"execution_count": 71
+				"execution_count": 126
 			},
 			{
 				"cell_type": "markdown",
@@ -986,9 +980,14 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"iiag_df_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/iiag_data/2024-IIAG-scores.xlsx'"
+					"iiag_df_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/iiag_data/2024-IIAG-scores.xlsx'\n",
+					"iiag_df = pd.read_excel(iiag_df_path)\n",
+					"iiag_df = pd.merge(iiag_df, african_countries, left_on='Country', right_on='country', how='left')\n",
+					"iiag_df = iiag_df[iiag_df['iso3'].isin(african_countries['iso3'])]\n",
+					"iiag_df.drop(columns=['Country'], inplace=True)\n",
+					"print(iiag_df.head())"
 				],
-				"execution_count": null
+				"execution_count": 104
 			},
 			{
 				"cell_type": "markdown",
@@ -1004,6 +1003,25 @@
 				]
 			},
 			{
+				"cell_type": "code",
+				"source": [
+					"infrastructure = iiag_df[['iso3', 'country', 'Year', 'INFR']].copy()\n",
+					"infrastructure.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'infrastructure_score'\n",
+					"infrastructure['infrastructure_score'] = 2 - (2 * infrastructure['value'] / 100) #Lower scores are worse\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"infrastructure['year'] = pd.to_numeric(infrastructure['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"infrastructure = infrastructure[infrastructure['year'] >=2013]\n",
+					"\n",
+					"print(infrastructure.head())"
+				],
+				"execution_count": 127
+			},
+			{
 				"cell_type": "markdown",
 				"metadata": {
 					"nteract": {
@@ -1015,6 +1033,51 @@
 				"source": [
 					"#### Group Grievances Index"
 				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Check to see if all countries are accounted for in all datasets\n",
+					"missing_iso = {}\n",
+					"for iso in african_countries['iso3']:\n",
+					"    missing_iso[iso] = []\n",
+					"    if not any(inequality['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('inequality')\n",
+					"    if not any(unemployment['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('unemployment')\n",
+					"    if not any(group_grievance['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('group_grievance')\n",
+					"    if not any(refugees['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('refugees')\n",
+					"    if not any(infrastructure['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('infrastructure')\n",
+					"print(missing_iso)"
+				],
+				"execution_count": 128
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"The following countries do not have data associated with at least one of the requisite datasets: CIV, COD, GNB, COG, SYC"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"ken_group_grievance_df = create_domain_index(country_iso, inequality, unemployment, group_grievance, refugees, infrastructure)\n",
+					"ken_group_grievance_df['iso3'] = country_iso\n",
+					"ken_group_grievance_df['name'] = 'Kenya'\n",
+					"ken_group_grievance_df.sort_values(by='year', inplace=True)\n",
+					"print(ken_group_grievance_df)"
+				],
+				"execution_count": 134
 			},
 			{
 				"cell_type": "markdown",
