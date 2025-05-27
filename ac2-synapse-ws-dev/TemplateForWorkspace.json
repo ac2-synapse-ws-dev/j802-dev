@@ -1602,7 +1602,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "74929d32-9648-46c6-892d-6e127fc3e6ca"
+						"spark.autotune.trackingId": "fc2fb286-2085-4c1c-a00d-63dccd2f034c"
 					}
 				},
 				"metadata": {
@@ -1725,7 +1725,7 @@
 							"%pip install pymetalog"
 						],
 						"outputs": [],
-						"execution_count": 75
+						"execution_count": 1
 					},
 					{
 						"cell_type": "markdown",
@@ -1756,7 +1756,7 @@
 							"from datetime import datetime"
 						],
 						"outputs": [],
-						"execution_count": 76
+						"execution_count": 2
 					},
 					{
 						"cell_type": "markdown",
@@ -1860,7 +1860,7 @@
 							"    return percentiles"
 						],
 						"outputs": [],
-						"execution_count": 77
+						"execution_count": 3
 					},
 					{
 						"cell_type": "markdown",
@@ -1967,7 +1967,7 @@
 							"print(environmental_adaptation.head())"
 						],
 						"outputs": [],
-						"execution_count": 110
+						"execution_count": 4
 					},
 					{
 						"cell_type": "code",
@@ -1976,7 +1976,7 @@
 							"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 						],
 						"outputs": [],
-						"execution_count": 80
+						"execution_count": 5
 					},
 					{
 						"cell_type": "markdown",
@@ -2035,7 +2035,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 111
+						"execution_count": 6
 					},
 					{
 						"cell_type": "code",
@@ -2044,7 +2044,7 @@
 							"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 82
+						"execution_count": 7
 					},
 					{
 						"cell_type": "markdown",
@@ -2110,7 +2110,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 112
+						"execution_count": 8
 					},
 					{
 						"cell_type": "code",
@@ -2119,7 +2119,7 @@
 							"check_country_names(illiteracy['name'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 84
+						"execution_count": 9
 					},
 					{
 						"cell_type": "markdown",
@@ -2191,7 +2191,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 85
+						"execution_count": 10
 					},
 					{
 						"cell_type": "code",
@@ -2200,7 +2200,7 @@
 							"check_country_names(fsi_data['Country'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 86
+						"execution_count": 11
 					},
 					{
 						"cell_type": "markdown",
@@ -2238,7 +2238,7 @@
 							"print(human_flight.head())"
 						],
 						"outputs": [],
-						"execution_count": 113
+						"execution_count": 12
 					},
 					{
 						"cell_type": "markdown",
@@ -2275,7 +2275,7 @@
 							"print(demographic_pressure.head())"
 						],
 						"outputs": [],
-						"execution_count": 114
+						"execution_count": 13
 					},
 					{
 						"cell_type": "markdown",
@@ -2311,7 +2311,7 @@
 							"print(missing_iso)"
 						],
 						"outputs": [],
-						"execution_count": 115
+						"execution_count": 14
 					},
 					{
 						"cell_type": "markdown",
@@ -2349,7 +2349,7 @@
 							"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 						],
 						"outputs": [],
-						"execution_count": 132
+						"execution_count": 15
 					},
 					{
 						"cell_type": "code",
@@ -2358,7 +2358,7 @@
 							"print(ken_socio_pressures_df)"
 						],
 						"outputs": [],
-						"execution_count": 133
+						"execution_count": 16
 					},
 					{
 						"cell_type": "markdown",
@@ -2383,7 +2383,7 @@
 							""
 						],
 						"outputs": [],
-						"execution_count": 118
+						"execution_count": 17
 					},
 					{
 						"cell_type": "code",
@@ -2392,7 +2392,7 @@
 							"pymetalog.summary(m)"
 						],
 						"outputs": [],
-						"execution_count": 119
+						"execution_count": 18
 					},
 					{
 						"cell_type": "code",
@@ -2401,7 +2401,7 @@
 							"pymetalog.plot(m)"
 						],
 						"outputs": [],
-						"execution_count": 120
+						"execution_count": 19
 					},
 					{
 						"cell_type": "markdown",
@@ -2462,7 +2462,7 @@
 							"print(inequality.head())"
 						],
 						"outputs": [],
-						"execution_count": 121
+						"execution_count": 20
 					},
 					{
 						"cell_type": "markdown",
@@ -2511,7 +2511,7 @@
 							"print(unemployment.head())"
 						],
 						"outputs": [],
-						"execution_count": 122
+						"execution_count": 21
 					},
 					{
 						"cell_type": "code",
@@ -2520,7 +2520,7 @@
 							"check_country_names(unemployment['name'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 124
+						"execution_count": 22
 					},
 					{
 						"cell_type": "markdown",
@@ -2557,7 +2557,7 @@
 							"print(group_grievance.head())"
 						],
 						"outputs": [],
-						"execution_count": 125
+						"execution_count": 23
 					},
 					{
 						"cell_type": "markdown",
@@ -2594,7 +2594,7 @@
 							"print(refugees.head())"
 						],
 						"outputs": [],
-						"execution_count": 126
+						"execution_count": 24
 					},
 					{
 						"cell_type": "markdown",
@@ -2621,7 +2621,7 @@
 							"print(iiag_df.head())"
 						],
 						"outputs": [],
-						"execution_count": 104
+						"execution_count": 25
 					},
 					{
 						"cell_type": "markdown",
@@ -2655,7 +2655,7 @@
 							"print(infrastructure.head())"
 						],
 						"outputs": [],
-						"execution_count": 127
+						"execution_count": 26
 					},
 					{
 						"cell_type": "markdown",
@@ -2691,7 +2691,7 @@
 							"print(missing_iso)"
 						],
 						"outputs": [],
-						"execution_count": 128
+						"execution_count": 27
 					},
 					{
 						"cell_type": "markdown",
@@ -2717,7 +2717,32 @@
 							"print(ken_group_grievance_df)"
 						],
 						"outputs": [],
-						"execution_count": 134
+						"execution_count": 28
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"### Sociopolitical Unrest Subdomain\n",
+							"\n",
+							"| Data Source | URL | Indicator Domain | Notes |\n",
+							"|-------------|-----|------------------|-------|\n",
+							"| Mo Ibrahim Index-Absence of Armed Conflict Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
+							"| Mo Ibrahim Index-Absence of Violence Against Civilians Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
+							"| Mo Ibrahim Index-Absence of Crime Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
+							"| Political Terror Scale [10]   | URL Here | Socioenvironmental Pressures | Annual Update |\n",
+							"| Global Peace Index-Violent Demonstrations Score [11]    | URL Here | Socioenvironmental Pressures | Annual Update |\n",
+							"\n",
+							"\n",
+							"Table of IRI Group Grievances Datasources\n",
+							""
+						]
 					},
 					{
 						"cell_type": "markdown",
