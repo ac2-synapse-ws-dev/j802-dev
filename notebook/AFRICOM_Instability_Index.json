@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "74b2b079-3e50-461d-9d86-1b4d980b626f"
+				"spark.autotune.trackingId": "2c4b323e-3280-4eee-9874-f2954a4dcf3f"
 			}
 		},
 		"metadata": {
@@ -138,7 +138,7 @@
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 1
+				"execution_count": 32
 			},
 			{
 				"cell_type": "markdown",
@@ -167,7 +167,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 2
+				"execution_count": 33
 			},
 			{
 				"cell_type": "markdown",
@@ -269,7 +269,7 @@
 					"    percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
 					"    return percentiles"
 				],
-				"execution_count": 3
+				"execution_count": 34
 			},
 			{
 				"cell_type": "markdown",
@@ -374,14 +374,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 4
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 5
+				"execution_count": 36
 			},
 			{
 				"cell_type": "markdown",
@@ -438,14 +438,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": 37
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 7
+				"execution_count": 38
 			},
 			{
 				"cell_type": "markdown",
@@ -510,14 +510,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 8
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 9
+				"execution_count": 40
 			},
 			{
 				"cell_type": "markdown",
@@ -587,14 +587,14 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 10
+				"execution_count": 41
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(fsi_data['Country'], african_countries['country'])"
 				],
-				"execution_count": 11
+				"execution_count": 42
 			},
 			{
 				"cell_type": "markdown",
@@ -630,7 +630,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 12
+				"execution_count": 43
 			},
 			{
 				"cell_type": "markdown",
@@ -665,7 +665,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 13
+				"execution_count": 44
 			},
 			{
 				"cell_type": "markdown",
@@ -699,7 +699,7 @@
 					"        missing_iso[iso].append('demographic_pressure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 14
+				"execution_count": 45
 			},
 			{
 				"cell_type": "markdown",
@@ -735,14 +735,14 @@
 					"ken_socio_pressures_df.sort_values(by='year', inplace=True)\n",
 					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 15
+				"execution_count": 46
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 16
+				"execution_count": 47
 			},
 			{
 				"cell_type": "markdown",
@@ -765,21 +765,21 @@
 					"\n",
 					""
 				],
-				"execution_count": 17
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 18
+				"execution_count": 49
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 19
+				"execution_count": 50
 			},
 			{
 				"cell_type": "markdown",
@@ -838,7 +838,7 @@
 					"\n",
 					"print(inequality.head())"
 				],
-				"execution_count": 20
+				"execution_count": 51
 			},
 			{
 				"cell_type": "markdown",
@@ -885,14 +885,14 @@
 					"\n",
 					"print(unemployment.head())"
 				],
-				"execution_count": 21
+				"execution_count": 52
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(unemployment['name'], african_countries['country'])"
 				],
-				"execution_count": 22
+				"execution_count": 53
 			},
 			{
 				"cell_type": "markdown",
@@ -927,7 +927,7 @@
 					"\n",
 					"print(group_grievance.head())"
 				],
-				"execution_count": 23
+				"execution_count": 54
 			},
 			{
 				"cell_type": "markdown",
@@ -962,7 +962,7 @@
 					"\n",
 					"print(refugees.head())"
 				],
-				"execution_count": 24
+				"execution_count": 55
 			},
 			{
 				"cell_type": "markdown",
@@ -987,7 +987,7 @@
 					"iiag_df.drop(columns=['Country'], inplace=True)\n",
 					"print(iiag_df.head())"
 				],
-				"execution_count": 25
+				"execution_count": 56
 			},
 			{
 				"cell_type": "markdown",
@@ -1019,7 +1019,7 @@
 					"\n",
 					"print(infrastructure.head())"
 				],
-				"execution_count": 26
+				"execution_count": 57
 			},
 			{
 				"cell_type": "markdown",
@@ -1053,7 +1053,7 @@
 					"        missing_iso[iso].append('infrastructure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 27
+				"execution_count": 58
 			},
 			{
 				"cell_type": "markdown",
@@ -1077,7 +1077,7 @@
 					"ken_group_grievance_df.sort_values(by='year', inplace=True)\n",
 					"print(ken_group_grievance_df)"
 				],
-				"execution_count": 28
+				"execution_count": 59
 			},
 			{
 				"cell_type": "markdown",
@@ -1096,12 +1096,122 @@
 					"| Mo Ibrahim Index-Absence of Armed Conflict Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Mo Ibrahim Index-Absence of Violence Against Civilians Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Mo Ibrahim Index-Absence of Crime Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Socioenvironmental Pressures | Annual Update |\n",
-					"| Political Terror Scale [10]   | URL Here | Socioenvironmental Pressures | Annual Update |\n",
+					"| Political Terror Scale [10]   | <https://www.politicalterrorscale.org/Data/Datatable.html> | Socioenvironmental Pressures | Annual Update |\n",
 					"| Global Peace Index-Violent Demonstrations Score [11]    | URL Here | Socioenvironmental Pressures | Annual Update |\n",
 					"\n",
 					"\n",
 					"Table of IRI Group Grievances Datasources\n",
 					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Armed Conflict"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Absence of Violence Against Civilians"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Absence of Crime"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Political Terror"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"political_terror_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/pts_data.csv'\n",
+					"political_terror = pd.read_csv(political_terror_path)\n",
+					"political_terror.loc[political_terror['Country'] == 'Congo, the Democratic Republic of the', 'Country'] = 'Democratic Republic of the Congo'\n",
+					"political_terror.loc[political_terror['Country'] == 'Congo', 'Country'] = 'Republic of the Congo'\n",
+					"political_terror.loc[political_terror['Country'] == 'Tanzania, United Republic of', 'Country'] = 'Tanzania'\n",
+					"political_terror['average_score'] = political_terror[['Amnesty International', 'Human Rights Watch', 'U.S. State Department']].mean(axis=1).copy()\n",
+					"\n",
+					"#Get ISO3 values and filter for specific African countries\n",
+					"political_terror = pd.merge(political_terror, african_countries, left_on='Country', right_on='country', how='left')\n",
+					"political_terror = political_terror[political_terror['iso3'].isin(african_countries['iso3'])]\n",
+					"\n",
+					"#Reorder and rename columns\n",
+					"political_terror = political_terror[['iso3', 'Country', 'Year', 'average_score']].copy()\n",
+					"political_terror.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'political_terror_score'\n",
+					"political_terror['political_terror_score'] = 2 * ((political_terror['value'] - 1) / 4) #Original scores are 1 - 5 with 5 being the worst\n",
+					"\n",
+					"\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"political_terror['year'] = pd.to_numeric(political_terror['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"political_terror = political_terror[political_terror['year'] >=2013]\n",
+					"\n",
+					"\n",
+					"\n",
+					"\n",
+					"\n",
+					"\n",
+					"print(political_terror.head())"
+				],
+				"execution_count": 72
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(political_terror['name'], african_countries['country'])"
+				],
+				"execution_count": 73
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Violent Demonstrations"
 				]
 			},
 			{
@@ -1133,6 +1243,8 @@
 					"[8] International Labor Organization (2025). *Unemployment and Labor Underutilization*. https://data.worldbank.org/indicator/SL.UEM.TOTL.ZS\n",
 					"\n",
 					"[9] Mo Ibrahim Foundation (2025). *Ibrahim Index of African Governance (IIAG)*. https://mo.ibrahim.foundation/our-research/iiag\n",
+					"\n",
+					"[10] Political Terror Scale (2025). *PTS Data Table*. https://www.politicalterrorscale.org/Data/Datatable.html\n",
 					"\n",
 					""
 				]
