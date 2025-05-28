@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2c4b323e-3280-4eee-9874-f2954a4dcf3f"
+				"spark.autotune.trackingId": "ee325084-adfb-4846-9367-06e917a12881"
 			}
 		},
 		"metadata": {
@@ -1114,8 +1114,27 @@
 					}
 				},
 				"source": [
-					"#### Armed Conflict"
+					"#### Abscence of Armed Conflict"
 				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"armed_conflict = iiag_df[['iso3', 'country', 'Year', 'AbsArmedConf']].copy()\n",
+					"armed_conflict.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'armed_conflict_score'\n",
+					"armed_conflict['armed_conflict_score'] = 2 - (2 * armed_conflict['value'] / 100) #Lower scores are worse\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"armed_conflict['year'] = pd.to_numeric(armed_conflict['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"armed_conflict = armed_conflict[armed_conflict['year'] >=2013]\n",
+					"\n",
+					"print(armed_conflict.head())"
+				],
+				"execution_count": 75
 			},
 			{
 				"cell_type": "markdown",
@@ -1131,6 +1150,25 @@
 				]
 			},
 			{
+				"cell_type": "code",
+				"source": [
+					"civilian_violence = iiag_df[['iso3', 'country', 'Year', 'AbsViolCiv']].copy()\n",
+					"civilian_violence.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'civilian_violence_score'\n",
+					"civilian_violence['civilian_violence_score'] = 2 - (2 * civilian_violence['value'] / 100) #Lower scores are worse\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"civilian_violence['year'] = pd.to_numeric(civilian_violence['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"civilian_violence = civilian_violence[civilian_violence['year'] >=2013]\n",
+					"\n",
+					"print(civilian_violence.head())"
+				],
+				"execution_count": 76
+			},
+			{
 				"cell_type": "markdown",
 				"metadata": {
 					"nteract": {
@@ -1142,6 +1180,25 @@
 				"source": [
 					"#### Absence of Crime"
 				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"crime_absence = iiag_df[['iso3', 'country', 'Year', 'AbsCrim']].copy()\n",
+					"crime_absence.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'crime_absence_score'\n",
+					"crime_absence['crime_absence_score'] = 2 - (2 * crime_absence['value'] / 100) #Lower scores are worse\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"crime_absence['year'] = pd.to_numeric(crime_absence['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"crime_absence = crime_absence[crime_absence['year'] >=2013]\n",
+					"\n",
+					"print(crime_absence.head())"
+				],
+				"execution_count": 77
 			},
 			{
 				"cell_type": "markdown",
@@ -1192,7 +1249,7 @@
 					"\n",
 					"print(political_terror.head())"
 				],
-				"execution_count": 72
+				"execution_count": 74
 			},
 			{
 				"cell_type": "code",
