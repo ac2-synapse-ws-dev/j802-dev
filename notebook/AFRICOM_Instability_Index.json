@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "413edbbb-782c-4909-86ca-0e106c66356a"
+				"spark.autotune.trackingId": "191a2ceb-3ab3-4042-94df-f8b16a119650"
 			}
 		},
 		"metadata": {
@@ -138,7 +138,7 @@
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 1
+				"execution_count": 39
 			},
 			{
 				"cell_type": "markdown",
@@ -167,7 +167,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 2
+				"execution_count": 40
 			},
 			{
 				"cell_type": "markdown",
@@ -267,9 +267,22 @@
 					"    upper_ci_end_year = forecast_end_year['upper_ci'].values[0]\n",
 					"\n",
 					"    percentiles = np.percentile([lower_ci_end_year, forecast_value, upper_ci_end_year], [10, 50, 90])\n",
-					"    return percentiles"
+					"    return percentiles\n",
+					"\n",
+					"def map_to_gpi_scale(score):\n",
+					"    if score == 0:\n",
+					"        return 1\n",
+					"    elif score <= 10:\n",
+					"        return 2\n",
+					"    elif score <= 20:\n",
+					"        return 3\n",
+					"    elif score <= 30:\n",
+					"        return 4\n",
+					"    else:\n",
+					"        return 5\n",
+					""
 				],
-				"execution_count": 3
+				"execution_count": 74
 			},
 			{
 				"cell_type": "markdown",
@@ -374,14 +387,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 4
+				"execution_count": 42
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 5
+				"execution_count": 43
 			},
 			{
 				"cell_type": "markdown",
@@ -438,14 +451,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 6
+				"execution_count": 44
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 7
+				"execution_count": 45
 			},
 			{
 				"cell_type": "markdown",
@@ -510,14 +523,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 8
+				"execution_count": 46
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 9
+				"execution_count": 47
 			},
 			{
 				"cell_type": "markdown",
@@ -587,14 +600,14 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 10
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(fsi_data['Country'], african_countries['country'])"
 				],
-				"execution_count": 11
+				"execution_count": 49
 			},
 			{
 				"cell_type": "markdown",
@@ -630,7 +643,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 12
+				"execution_count": 50
 			},
 			{
 				"cell_type": "markdown",
@@ -665,7 +678,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 13
+				"execution_count": 51
 			},
 			{
 				"cell_type": "markdown",
@@ -699,7 +712,7 @@
 					"        missing_iso[iso].append('demographic_pressure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 14
+				"execution_count": 52
 			},
 			{
 				"cell_type": "markdown",
@@ -735,14 +748,14 @@
 					"ken_socio_pressures_df.sort_values(by='year', inplace=True)\n",
 					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 15
+				"execution_count": 53
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 16
+				"execution_count": 54
 			},
 			{
 				"cell_type": "markdown",
@@ -765,21 +778,21 @@
 					"\n",
 					""
 				],
-				"execution_count": 17
+				"execution_count": 55
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 18
+				"execution_count": 56
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 19
+				"execution_count": 57
 			},
 			{
 				"cell_type": "markdown",
@@ -838,7 +851,7 @@
 					"\n",
 					"print(inequality.head())"
 				],
-				"execution_count": 20
+				"execution_count": 58
 			},
 			{
 				"cell_type": "markdown",
@@ -885,14 +898,14 @@
 					"\n",
 					"print(unemployment.head())"
 				],
-				"execution_count": 21
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(unemployment['name'], african_countries['country'])"
 				],
-				"execution_count": 22
+				"execution_count": 60
 			},
 			{
 				"cell_type": "markdown",
@@ -927,7 +940,7 @@
 					"\n",
 					"print(group_grievance.head())"
 				],
-				"execution_count": 23
+				"execution_count": 61
 			},
 			{
 				"cell_type": "markdown",
@@ -962,7 +975,7 @@
 					"\n",
 					"print(refugees.head())"
 				],
-				"execution_count": 24
+				"execution_count": 62
 			},
 			{
 				"cell_type": "markdown",
@@ -987,7 +1000,7 @@
 					"iiag_df.drop(columns=['Country'], inplace=True)\n",
 					"print(iiag_df.head())"
 				],
-				"execution_count": 25
+				"execution_count": 63
 			},
 			{
 				"cell_type": "markdown",
@@ -1019,7 +1032,7 @@
 					"\n",
 					"print(infrastructure.head())"
 				],
-				"execution_count": 26
+				"execution_count": 64
 			},
 			{
 				"cell_type": "markdown",
@@ -1053,7 +1066,7 @@
 					"        missing_iso[iso].append('infrastructure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 27
+				"execution_count": 65
 			},
 			{
 				"cell_type": "markdown",
@@ -1077,7 +1090,7 @@
 					"ken_group_grievance_df.sort_values(by='year', inplace=True)\n",
 					"print(ken_group_grievance_df)"
 				],
-				"execution_count": 28
+				"execution_count": 66
 			},
 			{
 				"cell_type": "markdown",
@@ -1134,7 +1147,7 @@
 					"\n",
 					"print(armed_conflict.head())"
 				],
-				"execution_count": 29
+				"execution_count": 67
 			},
 			{
 				"cell_type": "markdown",
@@ -1166,7 +1179,7 @@
 					"\n",
 					"print(civilian_violence.head())"
 				],
-				"execution_count": 30
+				"execution_count": 68
 			},
 			{
 				"cell_type": "markdown",
@@ -1198,7 +1211,7 @@
 					"\n",
 					"print(crime_absence.head())"
 				],
-				"execution_count": 35
+				"execution_count": 69
 			},
 			{
 				"cell_type": "markdown",
@@ -1249,14 +1262,14 @@
 					"\n",
 					"print(political_terror.head())"
 				],
-				"execution_count": 36
+				"execution_count": 70
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(political_terror['name'], african_countries['country'])"
 				],
-				"execution_count": 34
+				"execution_count": 71
 			},
 			{
 				"cell_type": "markdown",
@@ -1268,8 +1281,206 @@
 					}
 				},
 				"source": [
-					"#### Violent Demonstrations"
+					"#### Violent Demonstrations\n",
+					"\n",
+					"Since the Global Peace Index data is only available through a license, we will use the ACLED dataset to recreate the violent demonstrations score. \n",
+					"\n",
+					"##### 1. Event Selection\n",
+					"\n",
+					"We filtered the dataset to those events that fall under the GPI's definition of violent demonstrations with the given weights below:\n",
+					"\n",
+					"| Event Type in ACLED | Weight |\n",
+					"| ------------ | ------------- |\n",
+					"| Protest with intervention | 1 |\n",
+					"| Excessive force against Protestors | 2 |\n",
+					"| Violent Demonstration | 3 |\n",
+					"| Mob Violence | 4 |\n",
+					"\n",
+					"##### 2. Incident and Fatality Counts\n",
+					"\n",
+					"For each of these event types, we calculated:\n",
+					"\n",
+					"* The **number of incidents** (i.e., how many times the event occured).\n",
+					"* The **number of fatalities** associated with those events.\n",
+					"\n",
+					"##### 3. Weighted Scoring\n",
+					"\n",
+					"We applied the GPI's weighting system:\n",
+					"\n",
+					"* Each **incident** was multiplied by its event type's weight.\n",
+					"* Each **fatality** was multiplied by **twice** the event type's weight (since fatalities are weighted more heavily).\n",
+					"\n",
+					"The formula used was:\n",
+					"$$Weighted\\_Score = \\sum(Incidents \\times Weight + Fatalities \\times Weight \\times 2)$$\n",
+					"\n",
+					"##### 4. Mapping to GPI Scale\n",
+					"\n",
+					"The final weighted score was mapped to the GPI scale:\n",
+					"\n",
+					"| Weighted Score Range | GPI Score | Interpretation |\n",
+					"| ------------ | ------------- | ------------- |\n",
+					"| 0 | 1 | Very rare incidents |\n",
+					"| 1-10 | 2 | A few violent protests, mostly without fatalities |\n",
+					"| 11-20 | 3 | Some fatalities, a few violent protests or repression |\n",
+					"|21-30 | 4 | Frequent protests with violence and fatalities |\n",
+					"| >30 | 5| Large number of protests and fatalities |\n",
+					"\n",
+					""
 				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### ACLED Source Data"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"acled_data_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/(U)_ACLED_Data_201001-202504.xlsx'\n",
+					"acled_data = pd.read_excel(acled_data_path)\n",
+					"acled_data = acled_data[['country', 'year', 'sub_event_type', 'fatalities']].copy()\n",
+					"\n",
+					"print(acled_data.head())"
+				],
+				"execution_count": 78
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Modified Global Peace Index Scale"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"# Define the GPI event types and their weights\n",
+					"event_weights = {\n",
+					"    'Protest with intervention': 1,\n",
+					"    'Excessive force against protestors': 2,\n",
+					"    'Violent demonstration': 3,\n",
+					"    'Mob violence': 4\n",
+					"}\n",
+					"\n",
+					"violent_demonstrations = acled_data[acled_data['sub_event_type'].isin(event_weights.keys())].copy()\n",
+					"violent_demonstrations.loc[violent_demonstrations['country'] == 'Ivory Coast', 'country'] = \"Cote d'Ivoire\"\n",
+					"violent_demonstrations.loc[violent_demonstrations['country'] == 'Republic of Congo', 'country'] = \"Republic of the Congo\"\n",
+					"violent_demonstrations.loc[violent_demonstrations['country'] == 'Democratic Republic of Congo', 'country'] = \"Democratic Republic of the Congo\"\n",
+					"violent_demonstrations['event_weight'] = violent_demonstrations['sub_event_type'].map(event_weights)\n",
+					"violent_demonstrations['fatality_weight'] = violent_demonstrations['fatalities'] * 2 * violent_demonstrations['event_weight']\n",
+					"\n",
+					"violent_demonstrations_grouped = violent_demonstrations.groupby(['country','year']).agg({\n",
+					"    'event_weight': 'sum',\n",
+					"    'fatalities': 'sum',\n",
+					"    'fatality_weight': 'sum'\n",
+					"}).reset_index()\n",
+					"\n",
+					"violent_demonstrations_grouped['total_weighted_score'] = violent_demonstrations_grouped['event_weight'] + violent_demonstrations_grouped['fatalities'] * violent_demonstrations_grouped['fatality_weight']\n",
+					"\n",
+					"#Apply the GPI score mapping\n",
+					"violent_demonstrations_grouped['value'] = violent_demonstrations_grouped['total_weighted_score'].apply(map_to_gpi_scale)\n",
+					"\n",
+					"\n",
+					"#Get ISO3 values and filter for specific African countries\n",
+					"violent_demonstrations_grouped = pd.merge(violent_demonstrations_grouped, african_countries, on='country', how='left')\n",
+					"violent_demonstrations_grouped = violent_demonstrations_grouped[violent_demonstrations_grouped['iso3'].isin(african_countries['iso3'])]\n",
+					"\n",
+					"#Select final columns and rename\n",
+					"violent_demonstrations_grouped = violent_demonstrations_grouped[['iso3', 'country', 'year', 'value']].copy()\n",
+					"violent_demonstrations_grouped.columns = iri_col_names\n",
+					"\n",
+					"\n",
+					"violent_demonstrations_grouped['violent_demonstrations_score'] = 2 * (violent_demonstrations_grouped['value'] / 5)\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"violent_demonstrations_grouped['year'] = pd.to_numeric(violent_demonstrations_grouped['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"violent_demonstrations_grouped = violent_demonstrations_grouped[violent_demonstrations_grouped['year'] >=2013]\n",
+					"\n",
+					"print(violent_demonstrations_grouped.head())"
+				],
+				"execution_count": 100
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(violent_demonstrations_grouped['name'], african_countries['country'])"
+				],
+				"execution_count": 96
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Sociopolitical Unrest Index"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"#Check to see if all countries are accounted for in all datasets\n",
+					"missing_iso = {}\n",
+					"for iso in african_countries['iso3']:\n",
+					"    missing_iso[iso] = []\n",
+					"    if not any(armed_conflict['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('armed_conflict')\n",
+					"    if not any(civilian_violence['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('civilian_violence')\n",
+					"    if not any(crime_absence['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('crime_absence')\n",
+					"    if not any(political_terror['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('political_terror')\n",
+					"    if not any(violent_demonstrations_grouped['iso3'].str.contains(iso)):\n",
+					"        missing_iso[iso].append('violent_demonstrations_grouped')\n",
+					"print(missing_iso)"
+				],
+				"execution_count": 97
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"The following countries do not have data associated with at least one of the requisite datasets: CPV, CIV, COD, SWZ, COG, STP"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"ken_sociopolitical_unrest_df = create_domain_index(country_iso, armed_conflict, civilian_violence, crime_absence, political_terror, violent_demonstrations_grouped)\n",
+					"ken_sociopolitical_unrest_df['iso3'] = country_iso\n",
+					"ken_sociopolitical_unrest_df['name'] = 'Kenya'\n",
+					"ken_sociopolitical_unrest_df.sort_values(by='year', inplace=True)\n",
+					"\n",
+					"print(ken_sociopolitical_unrest_df)"
+				],
+				"execution_count": 101
 			},
 			{
 				"cell_type": "markdown",
