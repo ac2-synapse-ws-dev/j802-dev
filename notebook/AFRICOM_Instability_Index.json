@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "28c0c1f0-389d-4140-adeb-f88c84250b9b"
+				"spark.autotune.trackingId": "ef3bf5db-51a7-4f22-8cd9-345fd73c79ab"
 			}
 		},
 		"metadata": {
@@ -138,7 +138,7 @@
 					"%pip install pandas_datareader\n",
 					"%pip install pymetalog"
 				],
-				"execution_count": 39
+				"execution_count": 1
 			},
 			{
 				"cell_type": "markdown",
@@ -167,7 +167,7 @@
 					"from statsmodels.tsa.arima.model import ARIMA\n",
 					"from datetime import datetime"
 				],
-				"execution_count": 40
+				"execution_count": 2
 			},
 			{
 				"cell_type": "markdown",
@@ -282,7 +282,7 @@
 					"        return 5\n",
 					""
 				],
-				"execution_count": 74
+				"execution_count": 3
 			},
 			{
 				"cell_type": "markdown",
@@ -387,14 +387,14 @@
 					"\n",
 					"print(environmental_adaptation.head())"
 				],
-				"execution_count": 42
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(environmental_adaptation['name'], african_countries['country']) #used to check for spelling differences in country name sets"
 				],
-				"execution_count": 43
+				"execution_count": 5
 			},
 			{
 				"cell_type": "markdown",
@@ -451,14 +451,14 @@
 					"\n",
 					""
 				],
-				"execution_count": 44
+				"execution_count": 6
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(youth_underdevelopment['name'], african_countries['country'])"
 				],
-				"execution_count": 45
+				"execution_count": 7
 			},
 			{
 				"cell_type": "markdown",
@@ -523,14 +523,14 @@
 					"print(illiteracy.head())\n",
 					""
 				],
-				"execution_count": 46
+				"execution_count": 8
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(illiteracy['name'], african_countries['country'])"
 				],
-				"execution_count": 47
+				"execution_count": 9
 			},
 			{
 				"cell_type": "markdown",
@@ -600,14 +600,14 @@
 					"print(fsi_data.head())\n",
 					""
 				],
-				"execution_count": 48
+				"execution_count": 10
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(fsi_data['Country'], african_countries['country'])"
 				],
-				"execution_count": 49
+				"execution_count": 11
 			},
 			{
 				"cell_type": "markdown",
@@ -643,7 +643,7 @@
 					"\n",
 					"print(human_flight.head())"
 				],
-				"execution_count": 50
+				"execution_count": 12
 			},
 			{
 				"cell_type": "markdown",
@@ -678,7 +678,7 @@
 					"\n",
 					"print(demographic_pressure.head())"
 				],
-				"execution_count": 51
+				"execution_count": 13
 			},
 			{
 				"cell_type": "markdown",
@@ -712,7 +712,7 @@
 					"        missing_iso[iso].append('demographic_pressure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 52
+				"execution_count": 14
 			},
 			{
 				"cell_type": "markdown",
@@ -748,14 +748,14 @@
 					"ken_socio_pressures_df.sort_values(by='year', inplace=True)\n",
 					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 53
+				"execution_count": 15
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 54
+				"execution_count": 16
 			},
 			{
 				"cell_type": "markdown",
@@ -778,21 +778,21 @@
 					"\n",
 					""
 				],
-				"execution_count": 55
+				"execution_count": 17
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.summary(m)"
 				],
-				"execution_count": 56
+				"execution_count": 18
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"pymetalog.plot(m)"
 				],
-				"execution_count": 57
+				"execution_count": 19
 			},
 			{
 				"cell_type": "markdown",
@@ -851,7 +851,7 @@
 					"\n",
 					"print(inequality.head())"
 				],
-				"execution_count": 58
+				"execution_count": 20
 			},
 			{
 				"cell_type": "markdown",
@@ -898,14 +898,14 @@
 					"\n",
 					"print(unemployment.head())"
 				],
-				"execution_count": 59
+				"execution_count": 21
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(unemployment['name'], african_countries['country'])"
 				],
-				"execution_count": 60
+				"execution_count": 22
 			},
 			{
 				"cell_type": "markdown",
@@ -940,7 +940,7 @@
 					"\n",
 					"print(group_grievance.head())"
 				],
-				"execution_count": 61
+				"execution_count": 23
 			},
 			{
 				"cell_type": "markdown",
@@ -975,7 +975,7 @@
 					"\n",
 					"print(refugees.head())"
 				],
-				"execution_count": 62
+				"execution_count": 24
 			},
 			{
 				"cell_type": "markdown",
@@ -1000,7 +1000,7 @@
 					"iiag_df.drop(columns=['Country'], inplace=True)\n",
 					"print(iiag_df.head())"
 				],
-				"execution_count": 63
+				"execution_count": 25
 			},
 			{
 				"cell_type": "markdown",
@@ -1032,7 +1032,7 @@
 					"\n",
 					"print(infrastructure.head())"
 				],
-				"execution_count": 64
+				"execution_count": 26
 			},
 			{
 				"cell_type": "markdown",
@@ -1066,7 +1066,7 @@
 					"        missing_iso[iso].append('infrastructure')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 65
+				"execution_count": 27
 			},
 			{
 				"cell_type": "markdown",
@@ -1090,7 +1090,7 @@
 					"ken_group_grievance_df.sort_values(by='year', inplace=True)\n",
 					"print(ken_group_grievance_df)"
 				],
-				"execution_count": 66
+				"execution_count": 28
 			},
 			{
 				"cell_type": "markdown",
@@ -1147,7 +1147,7 @@
 					"\n",
 					"print(armed_conflict.head())"
 				],
-				"execution_count": 67
+				"execution_count": 29
 			},
 			{
 				"cell_type": "markdown",
@@ -1179,7 +1179,7 @@
 					"\n",
 					"print(civilian_violence.head())"
 				],
-				"execution_count": 68
+				"execution_count": 30
 			},
 			{
 				"cell_type": "markdown",
@@ -1211,7 +1211,7 @@
 					"\n",
 					"print(crime_absence.head())"
 				],
-				"execution_count": 69
+				"execution_count": 31
 			},
 			{
 				"cell_type": "markdown",
@@ -1262,14 +1262,14 @@
 					"\n",
 					"print(political_terror.head())"
 				],
-				"execution_count": 70
+				"execution_count": 32
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(political_terror['name'], african_countries['country'])"
 				],
-				"execution_count": 71
+				"execution_count": 33
 			},
 			{
 				"cell_type": "markdown",
@@ -1350,7 +1350,7 @@
 					"\n",
 					"print(acled_data.head())"
 				],
-				"execution_count": 78
+				"execution_count": 34
 			},
 			{
 				"cell_type": "markdown",
@@ -1414,14 +1414,14 @@
 					"\n",
 					"print(violent_demonstrations_grouped.head())"
 				],
-				"execution_count": 100
+				"execution_count": 35
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(violent_demonstrations_grouped['name'], african_countries['country'])"
 				],
-				"execution_count": 96
+				"execution_count": 36
 			},
 			{
 				"cell_type": "markdown",
@@ -1455,7 +1455,7 @@
 					"        missing_iso[iso].append('violent_demonstrations_grouped')\n",
 					"print(missing_iso)"
 				],
-				"execution_count": 97
+				"execution_count": 37
 			},
 			{
 				"cell_type": "markdown",
@@ -1480,7 +1480,80 @@
 					"\n",
 					"print(ken_sociopolitical_unrest_df)"
 				],
-				"execution_count": 101
+				"execution_count": 38
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"## Governance Capacity Domain"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Institutional Capacity Subdomain\n",
+					"\n",
+					"| Data Source | URL | Indicator Domain | Notes |\n",
+					"|-------------|-----|------------------|-------|\n",
+					"| Freedom House Functioning of Government Score [11]   | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
+					"| Freedom House: Legislative Functioning Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
+					"| Freedom House: Judicial Independence Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
+					"| Freedom House: Electoral Process Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
+					"| Mo Ibrahim Index-Law Enforcement Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Institutional Capacity | Annual Update |\n",
+					"\n",
+					"Table of IRI Institutional Capacity Datasources\n",
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Functioning Executive"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"func_exec_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/freedomhouse_data/Aggregate_Category_and_Subcategory_Scores_FIW_2003-2024.xlsx'\n",
+					"func_exec = pd.read_excel(func_exec_path, sheet_name='FIW06-24')\n",
+					"#func_exec = func_exec[['Country/Territory', 'Region', 'C/T?', 'Edition', 'C']].copy()\n",
+					"# func_exec = func_exec[func_exec['Region']=='Africa']\n",
+					"# func_exec.rename(columns={'Country/Territory':'country','Edition':'year', 'C':'value'}, inplace=True)\n",
+					"# func_exec = pd.merge(func_exec, african_countries, on='country', how='left')\n",
+					"# func_exec['func_exec_score'] = (1 - func_exec['value'] / func_exec['value'].max()) * 2\n",
+					"# func_exec.rename(columns={'country':'name'}, inplace=True)\n",
+					"# func_exec = func_exec[['iso3', 'name', 'year', 'value', 'func_exec_score']]\n",
+					"#print(func_exec.head())"
+				],
+				"execution_count": 56
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"check_country_names(func_exec['name'], african_countries['country'])"
+				],
+				"execution_count": 50
 			},
 			{
 				"cell_type": "code",
@@ -1565,6 +1638,8 @@
 					"[9] Mo Ibrahim Foundation (2025). *Ibrahim Index of African Governance (IIAG)*. https://mo.ibrahim.foundation/our-research/iiag\n",
 					"\n",
 					"[10] Political Terror Scale (2025). *PTS Data Table*. https://www.politicalterrorscale.org/Data/Datatable.html\n",
+					"\n",
+					"[11] Freedom House (2025). *Freedom In the World*. https://freedomhouse.org/report/freedom-world\n",
 					"\n",
 					""
 				]
