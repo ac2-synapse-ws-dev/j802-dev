@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "ef3bf5db-51a7-4f22-8cd9-345fd73c79ab"
+				"spark.autotune.trackingId": "6b2555a9-b3de-4375-966c-cf9a4596c5f5"
 			}
 		},
 		"metadata": {
@@ -1179,7 +1179,7 @@
 					"\n",
 					"print(civilian_violence.head())"
 				],
-				"execution_count": 30
+				"execution_count": 48
 			},
 			{
 				"cell_type": "markdown",
@@ -1529,31 +1529,53 @@
 					}
 				},
 				"source": [
-					"##### Functioning Executive"
+					"##### Freedom House Data"
 				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"func_exec_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/freedomhouse_data/Aggregate_Category_and_Subcategory_Scores_FIW_2003-2024.xlsx'\n",
-					"func_exec = pd.read_excel(func_exec_path, sheet_name='FIW06-24')\n",
-					"#func_exec = func_exec[['Country/Territory', 'Region', 'C/T?', 'Edition', 'C']].copy()\n",
-					"# func_exec = func_exec[func_exec['Region']=='Africa']\n",
-					"# func_exec.rename(columns={'Country/Territory':'country','Edition':'year', 'C':'value'}, inplace=True)\n",
-					"# func_exec = pd.merge(func_exec, african_countries, on='country', how='left')\n",
-					"# func_exec['func_exec_score'] = (1 - func_exec['value'] / func_exec['value'].max()) * 2\n",
-					"# func_exec.rename(columns={'country':'name'}, inplace=True)\n",
-					"# func_exec = func_exec[['iso3', 'name', 'year', 'value', 'func_exec_score']]\n",
-					"#print(func_exec.head())"
+					"world_freedom_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/freedomhouse_data/All_data_FIW_2013-2024.xlsx'\n",
+					"world_freedom = pd.read_excel(world_freedom_path, sheet_name='FIW13-25', skiprows=1)\n",
+					"world_freedom = world_freedom[(world_freedom['Region']=='Africa') & (world_freedom['C/T']=='c')]\n",
+					"world_freedom.rename(columns={'Country/Territory':'country','Edition':'year'}, inplace=True)\n",
+					"world_freedom.loc[world_freedom['country'] == 'Congo (Kinshasa)', 'country'] = 'Democratic Republic of the Congo'\n",
+					"world_freedom.loc[world_freedom['country'] == 'Congo (Brazzaville)', 'country'] = 'Republic of the Congo'\n",
+					"world_freedom.loc[world_freedom['country'] == 'The Gambia', 'country'] = 'Gambia'\n",
+					"world_freedom = pd.merge(world_freedom, african_countries, on='country', how='left')\n",
+					"print(world_freedom.head())"
 				],
-				"execution_count": 56
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"check_country_names(func_exec['name'], african_countries['country'])"
+					"check_country_names(world_freedom['country'], african_countries['country'])"
 				],
-				"execution_count": 50
+				"execution_count": 60
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Functioning Executive (C)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"func_exec = world_freedom[['iso3', 'country', 'year', 'C']].copy()\n",
+					"func_exec.rename(columns={'C':'value'}, inplace=True)\n",
+					"func_exec['func_exec_score'] = (1 - func_exec['value'] / func_exec['value'].max()) * 2\n",
+					"print(func_exec.head())"
+				],
+				"execution_count": 61
 			},
 			{
 				"cell_type": "code",
