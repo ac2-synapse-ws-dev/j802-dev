@@ -1602,7 +1602,7 @@
 						"spark.dynamicAllocation.enabled": "false",
 						"spark.dynamicAllocation.minExecutors": "2",
 						"spark.dynamicAllocation.maxExecutors": "2",
-						"spark.autotune.trackingId": "264fcd73-562a-4057-94cb-72ec3f00241f"
+						"spark.autotune.trackingId": "910500d4-bb71-49ee-8cd5-651193b44188"
 					}
 				},
 				"metadata": {
@@ -2823,7 +2823,7 @@
 							"print(civilian_violence.head())"
 						],
 						"outputs": [],
-						"execution_count": 30
+						"execution_count": 48
 					},
 					{
 						"cell_type": "markdown",
@@ -3189,35 +3189,59 @@
 							}
 						},
 						"source": [
-							"##### Functioning Executive"
+							"##### Freedom House Data"
 						]
 					},
 					{
 						"cell_type": "code",
 						"metadata": {},
 						"source": [
-							"func_exec_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/freedomhouse_data/Aggregate_Category_and_Subcategory_Scores_FIW_2003-2024.xlsx'\n",
-							"func_exec = pd.read_excel(func_exec_path, sheet_name='FIW06-24')\n",
-							"#func_exec = func_exec[['Country/Territory', 'Region', 'C/T?', 'Edition', 'C']].copy()\n",
-							"# func_exec = func_exec[func_exec['Region']=='Africa']\n",
-							"# func_exec.rename(columns={'Country/Territory':'country','Edition':'year', 'C':'value'}, inplace=True)\n",
-							"# func_exec = pd.merge(func_exec, african_countries, on='country', how='left')\n",
-							"# func_exec['func_exec_score'] = (1 - func_exec['value'] / func_exec['value'].max()) * 2\n",
-							"# func_exec.rename(columns={'country':'name'}, inplace=True)\n",
-							"# func_exec = func_exec[['iso3', 'name', 'year', 'value', 'func_exec_score']]\n",
-							"#print(func_exec.head())"
+							"world_freedom_path = 'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/freedomhouse_data/All_data_FIW_2013-2024.xlsx'\n",
+							"world_freedom = pd.read_excel(world_freedom_path, sheet_name='FIW13-25', skiprows=1)\n",
+							"world_freedom = world_freedom[(world_freedom['Region']=='Africa') & (world_freedom['C/T']=='c')]\n",
+							"world_freedom.rename(columns={'Country/Territory':'country','Edition':'year'}, inplace=True)\n",
+							"world_freedom.loc[world_freedom['country'] == 'Congo (Kinshasa)', 'country'] = 'Democratic Republic of the Congo'\n",
+							"world_freedom.loc[world_freedom['country'] == 'Congo (Brazzaville)', 'country'] = 'Republic of the Congo'\n",
+							"world_freedom.loc[world_freedom['country'] == 'The Gambia', 'country'] = 'Gambia'\n",
+							"world_freedom = pd.merge(world_freedom, african_countries, on='country', how='left')\n",
+							"print(world_freedom.head())"
 						],
 						"outputs": [],
-						"execution_count": 56
+						"execution_count": 59
 					},
 					{
 						"cell_type": "code",
 						"metadata": {},
 						"source": [
-							"check_country_names(func_exec['name'], african_countries['country'])"
+							"check_country_names(world_freedom['country'], african_countries['country'])"
 						],
 						"outputs": [],
-						"execution_count": 50
+						"execution_count": 60
+					},
+					{
+						"cell_type": "markdown",
+						"metadata": {
+							"nteract": {
+								"transient": {
+									"deleting": false
+								}
+							}
+						},
+						"source": [
+							"##### Functioning Executive (C)"
+						]
+					},
+					{
+						"cell_type": "code",
+						"metadata": {},
+						"source": [
+							"func_exec = world_freedom[['iso3', 'country', 'year', 'C']].copy()\n",
+							"func_exec.rename(columns={'C':'value'}, inplace=True)\n",
+							"func_exec['func_exec_score'] = (1 - func_exec['value'] / func_exec['value'].max()) * 2\n",
+							"print(func_exec.head())"
+						],
+						"outputs": [],
+						"execution_count": 61
 					},
 					{
 						"cell_type": "code",
@@ -13697,18 +13721,6 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('workspaceName'), '/ac2sqldwdev')]",
-			"type": "Microsoft.Synapse/workspaces/sqlPools",
-			"apiVersion": "2019-06-01-preview",
-			"properties": {
-				"collation": "SQL_Latin1_General_CP1_CI_AS",
-				"maxSizeBytes": 263882790666240,
-				"annotations": []
-			},
-			"dependsOn": [],
-			"location": "eastus"
-		},
-		{
 			"name": "[concat(parameters('workspaceName'), '/ac2sparkpooldev')]",
 			"type": "Microsoft.Synapse/workspaces/bigDataPools",
 			"apiVersion": "2019-06-01-preview",
@@ -13811,6 +13823,18 @@
 				"sparkVersion": "3.4",
 				"isComputeIsolationEnabled": false,
 				"sessionLevelPackagesEnabled": true,
+				"annotations": []
+			},
+			"dependsOn": [],
+			"location": "eastus"
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/ac2sqldwdev')]",
+			"type": "Microsoft.Synapse/workspaces/sqlPools",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"collation": "SQL_Latin1_General_CP1_CI_AS",
+				"maxSizeBytes": 263882790666240,
 				"annotations": []
 			},
 			"dependsOn": [],
