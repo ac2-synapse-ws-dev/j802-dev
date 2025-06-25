@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "cd44ae19-2a09-4743-b44c-34e4f2379db7"
+				"spark.autotune.trackingId": "6a4757ac-b942-4c3c-9a65-6f908006193c"
 			}
 		},
 		"metadata": {
@@ -193,53 +193,94 @@
 					"def capture_named_args(**kwargs):\n",
 					"    return list(kwargs.keys())\n",
 					"\n",
-					"def create_domain_index(country_iso, df1, df2, df3, df4, df5):\n",
-					"    try:\n",
-					"        if all(country_iso in df[\"iso3\"].values for df in [df1, df2, df3, df4, df5]):\n",
-					"            print(f\"{country_iso} exists in all data frames. Continuing!\")\n",
-					"    except KeyError as e:\n",
-					"        print(f\"Column not found: {e}\")\n",
-					"    except Exception as e:\n",
-					"        print(f\"{country_iso} is missing in at least one data frame.\")\n",
+					"# def create_domain_index(country_iso, df1, df2, df3, df4, df5):\n",
+					"#     try:\n",
+					"#         if all(country_iso in df[\"iso3\"].values for df in [df1, df2, df3, df4, df5]):\n",
+					"#             print(f\"{country_iso} exists in all data frames. Continuing!\")\n",
+					"#     except KeyError as e:\n",
+					"#         print(f\"Column not found: {e}\")\n",
+					"#     except Exception as e:\n",
+					"#         print(f\"{country_iso} is missing in at least one data frame.\")\n",
 					"\n",
-					"    df_1 = df1[df1['iso3'] == country_iso].copy()\n",
-					"    df_1.drop(columns=[\"value\"], inplace=True)\n",
+					"#     df_1 = df1[df1['iso3'] == country_iso].copy()\n",
+					"#     df_1.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
-					"    df_2 = df2[df2['iso3'] == country_iso].copy()\n",
-					"    df_2.drop(columns=[\"value\"], inplace=True)\n",
+					"#     df_2 = df2[df2['iso3'] == country_iso].copy()\n",
+					"#     df_2.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
-					"    df_3 = df3[df3['iso3'] == country_iso].copy()\n",
-					"    df_3.drop(columns=[\"value\"], inplace=True)\n",
+					"#     df_3 = df3[df3['iso3'] == country_iso].copy()\n",
+					"#     df_3.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
-					"    df_4 = df4[df4['iso3'] == country_iso].copy()\n",
-					"    df_4.drop(columns=[\"value\"], inplace=True)\n",
+					"#     df_4 = df4[df4['iso3'] == country_iso].copy()\n",
+					"#     df_4.drop(columns=[\"value\"], inplace=True)\n",
 					"\n",
-					"    df_5 = df5[df5['iso3'] == country_iso].copy()\n",
-					"    df_5.drop(columns=[\"value\"], inplace=True)\n",
+					"#     df_5 = df5[df5['iso3'] == country_iso].copy()\n",
+					"#     df_5.drop(columns=[\"value\"], inplace=True)\n",
 					"        \n",
-					"    # Merge all dataframes on 'year'\n",
-					"    index_df = df_1.merge(df_2, on='year', how='outer', suffixes=('', '_df2')) \\\n",
-					"                         .merge(df_3, on='year', how='outer', suffixes=('', '_df3')) \\\n",
-					"                         .merge(df_4, on='year', how='outer', suffixes=('', '_df4')) \\\n",
-					"                         .merge(df_5, on='year', how='outer', suffixes=('', '_df5'))\n",
+					"#     # Merge all dataframes on 'year'\n",
+					"#     index_df = df_1.merge(df_2, on='year', how='outer', suffixes=('', '_df2')) \\\n",
+					"#                          .merge(df_3, on='year', how='outer', suffixes=('', '_df3')) \\\n",
+					"#                          .merge(df_4, on='year', how='outer', suffixes=('', '_df4')) \\\n",
+					"#                          .merge(df_5, on='year', how='outer', suffixes=('', '_df5'))\n",
 					"\n",
-					"    # Identify score columns\n",
-					"    score_cols = [col for col in index_df.columns if col.endswith('_score')]\n",
+					"#     # Identify score columns\n",
+					"#     score_cols = [col for col in index_df.columns if col.endswith('_score')]\n",
 					"    \n",
 					"\n",
-					"    # Interpolate missing values\n",
+					"#     # Interpolate missing values\n",
+					"#     for col in score_cols:\n",
+					"#         if index_df[col].isnull().any():\n",
+					"#             index_df[col] = index_df[col].interpolate(method='linear', limit_direction='both')\n",
+					"\n",
+					"#     keep_cols = ['iso3', 'name', 'year'] + score_cols\n",
+					"#     index_df = index_df[keep_cols]\n",
+					"\n",
+					"#     # Calculate domain score\n",
+					"#     index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
+					"#     index_df = index_df[['iso3', 'name', 'year', 'domain_score']]\n",
+					"\n",
+					"#     return index_df\n",
+					"\n",
+					"def create_domain_index(country_iso, dataframes):\n",
+					"    try:\n",
+					"        if all(country_iso in df[\"iso3\"].values for df in dataframes.values()):\n",
+					"            print(f\"{country_iso} exists in all data frames. Continuing!\")\n",
+					"    except KeyError as e:\n",
+					"        print(f\"Column for found: {e}\")\n",
+					"    except Exception as e:\n",
+					"        print(f\"{country_iso} is missing in at least one data frame.\")\n",
+					"    \n",
+					"    # Filter and drop 'value' column for each dataframe \n",
+					"    filtered_dfs = {\n",
+					"        key: df[df['iso3'] == country_iso].drop(columns=[\"value\"]).copy()\n",
+					"        for key, df in dataframes.items()\n",
+					"    }\n",
+					"\n",
+					"    # Merge all dataframes on 'year'\n",
+					"    index_df = None\n",
+					"    for key, df in filtered_dfs.items():\n",
+					"        if index_df is None:\n",
+					"            index_df = df\n",
+					"        else:\n",
+					"            index_df = index_df.merge(df, on='year', how='outer', suffixes=('', f'_{key}'))\n",
+					"\n",
+					"    #Identify score columns\n",
+					"    score_cols = [col for col in index_df.columns if col.endswith('_score')]\n",
+					"\n",
+					"    #Interpolate missing values\n",
 					"    for col in score_cols:\n",
 					"        if index_df[col].isnull().any():\n",
 					"            index_df[col] = index_df[col].interpolate(method='linear', limit_direction='both')\n",
 					"\n",
+					"    #Keep relevant columns\n",
 					"    keep_cols = ['iso3', 'name', 'year'] + score_cols\n",
 					"    index_df = index_df[keep_cols]\n",
 					"\n",
-					"    # Calculate domain score\n",
+					"    #Calcuate domain score\n",
 					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
-					"    index_df = index_df[['iso3', 'name', 'year', 'domain_score']]\n",
+					"    \n",
+					"    return index_df[['iso3', 'name', 'year', 'domain_score']]\n",
 					"\n",
-					"    return index_df\n",
 					"\n",
 					"def compute_estimate_percentiles(index_df):\n",
 					"    start_year = max(index_df['year']) + 1\n",
@@ -282,7 +323,7 @@
 					"        return 5\n",
 					""
 				],
-				"execution_count": 3
+				"execution_count": 58
 			},
 			{
 				"cell_type": "markdown",
@@ -744,18 +785,19 @@
 				"cell_type": "code",
 				"source": [
 					"country_iso = \"KEN\"\n",
-					"ken_socio_pressures_df = create_domain_index(country_iso, environmental_adaptation, youth_underdevelopment, illiteracy, human_flight, demographic_pressure)\n",
+					"socio_pressure_dfs = {'environmental_adaptation': environmental_adaptation, 'youth_underdevelopment': youth_underdevelopment, 'illiteracy': illiteracy, 'human_flight': human_flight, 'demographic_pressure': demographic_pressure}\n",
+					"ken_socio_pressures_df = create_domain_index(country_iso, socio_pressure_dfs)\n",
 					"ken_socio_pressures_df.sort_values(by='year', inplace=True)\n",
 					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 15
+				"execution_count": 59
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 16
+				"execution_count": 60
 			},
 			{
 				"cell_type": "markdown",
@@ -1084,13 +1126,20 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"ken_group_grievance_df = create_domain_index(country_iso, inequality, unemployment, group_grievance, refugees, infrastructure)\n",
+					"group_grievance_dfs = {\n",
+					"    'inequality': inequality,\n",
+					"    'unemployment': unemployment,\n",
+					"    'group_grievance': group_grievance,\n",
+					"    'refugees': refugees,\n",
+					"    'infrastructure': infrastructure\n",
+					"}\n",
+					"ken_group_grievance_df = create_domain_index(country_iso, group_grievance_dfs)\n",
 					"ken_group_grievance_df['iso3'] = country_iso\n",
 					"ken_group_grievance_df['name'] = 'Kenya'\n",
 					"ken_group_grievance_df.sort_values(by='year', inplace=True)\n",
 					"print(ken_group_grievance_df)"
 				],
-				"execution_count": 28
+				"execution_count": 61
 			},
 			{
 				"cell_type": "markdown",
@@ -1473,14 +1522,21 @@
 			{
 				"cell_type": "code",
 				"source": [
-					"ken_sociopolitical_unrest_df = create_domain_index(country_iso, armed_conflict, civilian_violence, crime_absence, political_terror, violent_demonstrations_grouped)\n",
+					"sociopolitical_unrest_dfs = {\n",
+					"    'armed_conflict': armed_conflict,\n",
+					"    'civilian_violence': civilian_violence,\n",
+					"    'crime_absence': crime_absence,\n",
+					"    'political_terror': political_terror,\n",
+					"    'violent_demonstrations_grouped': violent_demonstrations_grouped\n",
+					"}\n",
+					"ken_sociopolitical_unrest_df = create_domain_index(country_iso, sociopolitical_unrest_dfs)\n",
 					"ken_sociopolitical_unrest_df['iso3'] = country_iso\n",
 					"ken_sociopolitical_unrest_df['name'] = 'Kenya'\n",
 					"ken_sociopolitical_unrest_df.sort_values(by='year', inplace=True)\n",
 					"\n",
 					"print(ken_sociopolitical_unrest_df)"
 				],
-				"execution_count": 38
+				"execution_count": 62
 			},
 			{
 				"cell_type": "markdown",
@@ -1664,6 +1720,100 @@
 			{
 				"cell_type": "code",
 				"source": [
+					"institutional_capacity_dfs = {\n",
+					"    'func_exec': func_exec,\n",
+					"    'judicial_ind': judicial_ind,\n",
+					"    \"law_enforcement\":law_enforcement,\n",
+					"\"electoral_process\": electoral_process}\n",
+					"\n",
+					"ken_institutional_capacity_df = create_domain_index(country_iso, institutional_capacity_dfs)\n",
+					"ken_institutional_capacity_df['iso3'] = country_iso\n",
+					"ken_institutional_capacity_df['name'] = 'Kenya'\n",
+					"ken_institutional_capacity_df.sort_values(by='year', inplace=True)\n",
+					"\n",
+					"print(ken_institutional_capacity_df)"
+				],
+				"execution_count": 63
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Government Effectiveness Subdomain\n",
+					"\n",
+					"| Data Source | URL | Indicator Domain | Notes |\n",
+					"|-------------|-----|------------------|-------|\n",
+					"| Fragile State Index Public Services Score [7]   | <https://fragilestatesindex.org/excel/> | Government Effectiveness | Annual Update |\n",
+					"| Corruption Perception Index [12]    | <https://www.transparency.org/en/cpi/2024> | Government Effectiveness | To get the latest dataset, navigate to the provided URL and then scroll down to the full materials section and download the results and trends file for the latest year provided. |\n",
+					"| Fragile State Index External Intervention Score [7]   | <https://fragilestatesindex.org/excel/>  | Government Effectiveness | Annual Update |\n",
+					"| Economist Intelligence Unit Democracy Index    | NA | Government Effectiveness | Must pay a subscription to access this dataset |\n",
+					"| Freedom House - Personal Autonomy & Individual Rights Score [11]   | <https://freedomhouse.org/report/freedom-world> | Government Effectiveness | Annual Update |\n",
+					"\n",
+					"Table of IRI Government Effectiveness Datasources\n",
+					""
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Public Service"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Corruption"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### External Influence (Interference)"
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Order and Security"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
 					"# # Load the dataset\n",
 					"# df = pd.read_csv('15. ACLED_MAR_25.csv')\n",
 					"\n",
@@ -1746,6 +1896,8 @@
 					"[10] Political Terror Scale (2025). *PTS Data Table*. https://www.politicalterrorscale.org/Data/Datatable.html\n",
 					"\n",
 					"[11] Freedom House (2025). *Freedom In the World*. https://freedomhouse.org/report/freedom-world\n",
+					"\n",
+					"[12] Transparancy International (2025). *Corruption Perception Index*. https://www.transparency.org/en/cpi/2024\n",
 					"\n",
 					""
 				]
