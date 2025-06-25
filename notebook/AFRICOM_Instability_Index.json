@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "6b2555a9-b3de-4375-966c-cf9a4596c5f5"
+				"spark.autotune.trackingId": "cd44ae19-2a09-4743-b44c-34e4f2379db7"
 			}
 		},
 		"metadata": {
@@ -1179,7 +1179,7 @@
 					"\n",
 					"print(civilian_violence.head())"
 				],
-				"execution_count": 48
+				"execution_count": 30
 			},
 			{
 				"cell_type": "markdown",
@@ -1510,7 +1510,7 @@
 					"| Data Source | URL | Indicator Domain | Notes |\n",
 					"|-------------|-----|------------------|-------|\n",
 					"| Freedom House Functioning of Government Score [11]   | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
-					"| Freedom House: Legislative Functioning Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
+					"| Freedom House: Legislative Functioning Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Considered redundant as this sub-score is a part of the Functioning of Government Score |\n",
 					"| Freedom House: Judicial Independence Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
 					"| Freedom House: Electoral Process Score. [11]    | <https://freedomhouse.org/report/freedom-world> | Institutional Capacity | Annual Update |\n",
 					"| Mo Ibrahim Index-Law Enforcement Score [9]   | <https://mo.ibrahim.foundation/our-research/iiag> | Institutional Capacity | Annual Update |\n",
@@ -1545,14 +1545,14 @@
 					"world_freedom = pd.merge(world_freedom, african_countries, on='country', how='left')\n",
 					"print(world_freedom.head())"
 				],
-				"execution_count": 59
+				"execution_count": 39
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(world_freedom['country'], african_countries['country'])"
 				],
-				"execution_count": 60
+				"execution_count": 40
 			},
 			{
 				"cell_type": "markdown",
@@ -1573,9 +1573,93 @@
 					"func_exec = world_freedom[['iso3', 'country', 'year', 'C']].copy()\n",
 					"func_exec.rename(columns={'C':'value'}, inplace=True)\n",
 					"func_exec['func_exec_score'] = (1 - func_exec['value'] / func_exec['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"func_exec = func_exec[func_exec['year'] >=2013]\n",
 					"print(func_exec.head())"
 				],
-				"execution_count": 61
+				"execution_count": 49
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Judicial Independence (F1)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"judicial_ind = world_freedom[['iso3', 'country', 'year', 'F1']].copy()\n",
+					"judicial_ind.rename(columns={'F1':'value'}, inplace=True)\n",
+					"judicial_ind['judicial_ind_score'] = (1 - judicial_ind['value'] / judicial_ind['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"judicial_ind = judicial_ind[judicial_ind['year'] >=2013]\n",
+					"print(judicial_ind.head())"
+				],
+				"execution_count": 50
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Electoral Process (A)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"electoral_process = world_freedom[['iso3', 'country', 'year', 'A']].copy()\n",
+					"electoral_process.rename(columns={'A':'value'}, inplace=True)\n",
+					"electoral_process['electoral_process_score'] = (1 - electoral_process['value'] / electoral_process['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"electoral_process = electoral_process[electoral_process['year'] >=2013]\n",
+					"print(electoral_process.head())"
+				],
+				"execution_count": 51
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"##### Law Enforcement"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"law_enforcement = iiag_df[['iso3', 'country', 'Year', 'LawEnf']].copy()\n",
+					"law_enforcement.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'law_enforcement_score'\n",
+					"law_enforcement['law_enforcement_score'] = 2 - (2 * law_enforcement['value'] / 100) #Lower scores are worse\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"law_enforcement['year'] = pd.to_numeric(law_enforcement['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"law_enforcement = law_enforcement[law_enforcement['year'] >=2013]\n",
+					"\n",
+					"print(law_enforcement.head())"
+				],
+				"execution_count": 48
 			},
 			{
 				"cell_type": "code",
@@ -1627,7 +1711,7 @@
 					"\n",
 					""
 				],
-				"execution_count": null
+				"execution_count": 42
 			},
 			{
 				"cell_type": "markdown",
