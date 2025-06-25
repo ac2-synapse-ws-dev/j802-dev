@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "2d112257-f53c-4c05-9f97-38bcff724a4f"
+				"spark.autotune.trackingId": "85cf6b23-0110-4958-9756-fc2ba65488e1"
 			}
 		},
 		"metadata": {
@@ -1387,7 +1387,7 @@
 					}
 				},
 				"source": [
-					"##### ACLED Source Data"
+					"#### ACLED Source Data"
 				]
 			},
 			{
@@ -1411,7 +1411,7 @@
 					}
 				},
 				"source": [
-					"##### Modified Global Peace Index Scale"
+					"#### Modified Global Peace Index Scale"
 				]
 			},
 			{
@@ -1585,7 +1585,7 @@
 					}
 				},
 				"source": [
-					"##### Freedom House Data"
+					"#### Freedom House Data"
 				]
 			},
 			{
@@ -1620,7 +1620,7 @@
 					}
 				},
 				"source": [
-					"##### Functioning Executive (C)"
+					"#### Functioning Executive (Freedom House Data: Column C)"
 				]
 			},
 			{
@@ -1645,7 +1645,7 @@
 					}
 				},
 				"source": [
-					"##### Judicial Independence (F1)"
+					"#### Judicial Independence (Freedom House Data: Column F1)"
 				]
 			},
 			{
@@ -1670,7 +1670,7 @@
 					}
 				},
 				"source": [
-					"##### Electoral Process (A)"
+					"#### Electoral Process (Freedom House Data: Column A)"
 				]
 			},
 			{
@@ -1695,7 +1695,7 @@
 					}
 				},
 				"source": [
-					"##### Law Enforcement"
+					"#### Law Enforcement (Mo Ibrahim Data: Column LawEnf)"
 				]
 			},
 			{
@@ -1716,6 +1716,19 @@
 					"print(law_enforcement.head())"
 				],
 				"execution_count": 107
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Institutional Capacity Domain Test Computation"
+				]
 			},
 			{
 				"cell_type": "code",
@@ -1769,7 +1782,7 @@
 					}
 				},
 				"source": [
-					"##### Public Service (P2)"
+					"#### Public Service (Fragile State Index Data: Column P2)"
 				]
 			},
 			{
@@ -1803,7 +1816,7 @@
 					}
 				},
 				"source": [
-					"##### Corruption"
+					"#### Corruption"
 				]
 			},
 			{
@@ -1837,6 +1850,9 @@
 					"# Extract the year from the 'Year' column\n",
 					"corruption_perception['Year'] = corruption_perception['Year'].str.extract(r'(\\d{4})')\n",
 					"\n",
+					"corruption_perception.loc[corruption_perception['Country / Territory'] == 'Congo', 'Country / Territory'] = 'Republic of the Congo'\n",
+					"corruption_perception.loc[corruption_perception['Country / Territory'] == 'Guinea Bissau', 'Country / Territory'] = 'Guinea-Bissau'\n",
+					"\n",
 					"corruption_perception = corruption_perception[corruption_perception['ISO3'].isin(african_countries['iso3'])]\n",
 					"corruption_perception = corruption_perception[['ISO3', 'Country / Territory', 'Year', 'CPI Score']]\n",
 					"\n",
@@ -1858,21 +1874,48 @@
 					"\n",
 					""
 				],
-				"execution_count": 134
+				"execution_count": 139
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"check_country_names(corruption_perception['name'], african_countries['country'])"
 				],
-				"execution_count": 135
+				"execution_count": 140
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### External Influence (Interference) (Fragile State Index Data: Column X1)"
+				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"corruption_perception['name'].unique()"
+					"#Extract appropriate column and format the rest of the data\n",
+					"selected_col = 'X1: External Intervention'\n",
+					"external_intervention = fsi_data[['iso3','Country', 'Year', selected_col]].copy()\n",
+					"external_intervention.columns = iri_col_names\n",
+					"\n",
+					"# Compute 'external_intervention_score'\n",
+					"external_intervention['external_intervention_score'] = 2 * external_intervention['value'] / 10\n",
+					"\n",
+					"# Convert 'year' to numeric\n",
+					"external_intervention['year'] = pd.to_numeric(external_intervention['year'])\n",
+					"\n",
+					"# Filter for years >=2013\n",
+					"external_intervention = external_intervention[external_intervention['year'] >=2013]\n",
+					"\n",
+					"print(external_intervention.head())"
 				],
-				"execution_count": 136
+				"execution_count": 141
 			},
 			{
 				"cell_type": "markdown",
@@ -1884,73 +1927,57 @@
 					}
 				},
 				"source": [
-					"##### External Influence (Interference)"
-				]
-			},
-			{
-				"cell_type": "markdown",
-				"metadata": {
-					"nteract": {
-						"transient": {
-							"deleting": false
-						}
-					}
-				},
-				"source": [
-					"##### Order and Security"
+					"#### Order and Security (Freedom House Data: Column G)"
 				]
 			},
 			{
 				"cell_type": "code",
 				"source": [
-					"# # Load the dataset\n",
-					"# df = pd.read_csv('15. ACLED_MAR_25.csv')\n",
+					"order_and_security = world_freedom[['iso3', 'country', 'year', 'G']].copy()\n",
+					"order_and_security.rename(columns={'G':'value'}, inplace=True)\n",
+					"order_and_security['order_and_security_score'] = (1 - order_and_security['value'] / order_and_security['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"order_and_security = order_and_security[order_and_security['year'] >=2013]\n",
+					"print(order_and_security.head())"
+				],
+				"execution_count": 142
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"### Political Rights and Civil Liberties\n",
 					"\n",
-					"# # Filter relevant columns\n",
-					"# df = df[['iso', 'country', 'year', 'fatalities']]\n",
+					"| Data Source | URL | Indicator Domain | Notes |\n",
+					"|-------------|-----|------------------|-------|\n",
+					"| Freedom House - Political Pluralism Score [11]   | <https://freedomhouse.org/report/freedom-world> | Political Rights and Civil Liberties | Annual Update |\n",
+					"| Freedom House - Associational & Organizational Rights Score [11]    | <https://freedomhouse.org/report/freedom-world> | Political rights and Civil Liberties | Annual Update |\n",
+					"| Freedom House - Freedom of Expression and Belief Score [11]   | <https://freedomhouse.org/report/freedom-world>  | Political Rights and Civil Liberties | Annual Update |\n",
+					"| Freedom House - Personal Autonomy & Invdividual Rights  Score [11]    | <https://freedomhouse.org/report/freedom-world> | Political Rights and Civil Liberties |Annual Update |\n",
+					"| Freedom House - Personal Autonomy & Individual Rights Score [11]   | <https://freedomhouse.org/report/freedom-world> | Political Rights and Civil Liberties | Annual Update |\n",
 					"\n",
-					"# # Group by country and year, summing fatalities\n",
-					"# grouped_df = df.groupby(['iso', 'country', 'year']).sum().reset_index()\n",
-					"\n",
-					"# # Function to forecast using ARIMA\n",
-					"# def forecast_arima(data, steps=3):\n",
-					"#     model = ARIMA(data, order=(1, 1, 1))\n",
-					"#     model_fit = model.fit()\n",
-					"#     forecast = model_fit.forecast(steps=steps)\n",
-					"#     return forecast\n",
-					"\n",
-					"# # Initialize an empty DataFrame to store results\n",
-					"# forecasted_df = pd.DataFrame(columns=['iso', 'country', 'year', 'fatalities'])\n",
-					"\n",
-					"# # Iterate over each country\n",
-					"# for country in grouped_df['country'].unique():\n",
-					"#     country_df = grouped_df[grouped_df['country'] == country]\n",
-					"#     max_year = country_df['year'].max()\n",
-					"    \n",
-					"#     # If max year is less than 2025, forecast\n",
-					"#     if max_year < 2025:\n",
-					"#         # Forecast fatalities for the next years up to 2025\n",
-					"#         forecasted_fatalities = forecast_arima(country_df['fatalities'], steps=2025 - max_year)\n",
-					"        \n",
-					"#         # Create new rows for forecasted years\n",
-					"#         for i, forecast in enumerate(forecasted_fatalities):\n",
-					"#             new_row = {\n",
-					"#                 'iso': country_df['iso'].iloc[0],\n",
-					"#                 'country': country,\n",
-					"#                 'year': max_year + i + 1,\n",
-					"#                 'fatalities': forecast\n",
-					"#             }\n",
-					"#             forecasted_df = forecasted_df.append(new_row, ignore_index=True)\n",
-					"\n",
-					"# # Append forecasted rows to the original DataFrame\n",
-					"# final_df = pd.concat([grouped_df, forecasted_df], ignore_index=True)\n",
-					"\n",
-					"# # Display the final DataFrame\n",
-					"# print(final_df)\n",
-					"\n",
+					"Table of IRI Political Rights and Civil Liberties Datasources\n",
 					""
-				],
-				"execution_count": 109
+				]
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
 			},
 			{
 				"cell_type": "markdown",
