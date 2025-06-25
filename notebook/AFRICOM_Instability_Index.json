@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "85cf6b23-0110-4958-9756-fc2ba65488e1"
+				"spark.autotune.trackingId": "099afc6b-deba-4da9-b091-03a02c746071"
 			}
 		},
 		"metadata": {
@@ -1959,8 +1959,8 @@
 					"| Freedom House - Political Pluralism Score [11]   | <https://freedomhouse.org/report/freedom-world> | Political Rights and Civil Liberties | Annual Update |\n",
 					"| Freedom House - Associational & Organizational Rights Score [11]    | <https://freedomhouse.org/report/freedom-world> | Political rights and Civil Liberties | Annual Update |\n",
 					"| Freedom House - Freedom of Expression and Belief Score [11]   | <https://freedomhouse.org/report/freedom-world>  | Political Rights and Civil Liberties | Annual Update |\n",
-					"| Freedom House - Personal Autonomy & Invdividual Rights  Score [11]    | <https://freedomhouse.org/report/freedom-world> | Political Rights and Civil Liberties |Annual Update |\n",
-					"| Freedom House - Personal Autonomy & Individual Rights Score [11]   | <https://freedomhouse.org/report/freedom-world> | Political Rights and Civil Liberties | Annual Update |\n",
+					"| Freedom House - Personal Autonomy & Invdividual Rights  Score [11]    | NA | Political Rights and Civil Liberties |This index domain was already collected in the previous section. |\n",
+					"| Press Freedom   | NA | Political Rights and Civil Liberties | Africomn Risk Index document mentions corruption perception index. This was already attributed to anoter doman so will not be used again to reduce bias risk [1]. |\n",
 					"\n",
 					"Table of IRI Political Rights and Civil Liberties Datasources\n",
 					""
@@ -1976,8 +1976,70 @@
 					}
 				},
 				"source": [
-					""
+					"#### Political Pluralism (Freedom House Data: Column B)"
 				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"political_pluralism = world_freedom[['iso3', 'country', 'year', 'G']].copy()\n",
+					"political_pluralism.rename(columns={'G':'value'}, inplace=True)\n",
+					"political_pluralism['political_pluralism_score'] = (1 - political_pluralism['value'] / political_pluralism['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"political_pluralism = political_pluralism[political_pluralism['year'] >=2013]\n",
+					"print(political_pluralism.head())"
+				],
+				"execution_count": 143
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Associational & Organizational Rights (Freedom House Data: Column E)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"association_organization = world_freedom[['iso3', 'country', 'year', 'G']].copy()\n",
+					"association_organization.rename(columns={'G':'value'}, inplace=True)\n",
+					"association_organization['association_organization_score'] = (1 - association_organization['value'] / association_organization['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"association_organization = association_organization[association_organization['year'] >=2013]\n",
+					"print(association_organization.head())"
+				],
+				"execution_count": 144
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"#### Freedom of Expression and Belief (Freedom House Data: Column D)"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"expression_and_belief = world_freedom[['iso3', 'country', 'year', 'G']].copy()\n",
+					"expression_and_belief.rename(columns={'G':'value'}, inplace=True)\n",
+					"expression_and_belief['expression_and_belief_score'] = (1 - expression_and_belief['value'] / expression_and_belief['value'].max()) * 2\n",
+					"# Filter for years >=2013\n",
+					"expression_and_belief = expression_and_belief[expression_and_belief['year'] >=2013]\n",
+					"print(expression_and_belief.head())"
+				],
+				"execution_count": 145
 			},
 			{
 				"cell_type": "markdown",
