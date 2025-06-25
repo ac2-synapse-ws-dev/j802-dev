@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "099afc6b-deba-4da9-b091-03a02c746071"
+				"spark.autotune.trackingId": "662583db-fe0b-4bc5-96e7-f28377a0203a"
 			}
 		},
 		"metadata": {
@@ -165,9 +165,10 @@
 					"from pyspark.sql.functions import col, year\n",
 					"import pymetalog\n",
 					"from statsmodels.tsa.arima.model import ARIMA\n",
-					"from datetime import datetime"
+					"from datetime import datetime\n",
+					"from datetime import date"
 				],
-				"execution_count": 65
+				"execution_count": 161
 			},
 			{
 				"cell_type": "markdown",
@@ -277,7 +278,8 @@
 					"    index_df = index_df[keep_cols]\n",
 					"\n",
 					"    #Calcuate domain score\n",
-					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / 10\n",
+					"    max_score = len(dataframes.keys()) * 2\n",
+					"    index_df['domain_score'] = index_df[score_cols].sum(axis=1, skipna=True) / max_score\n",
 					"    \n",
 					"    return index_df[['iso3', 'name', 'year', 'domain_score']]\n",
 					"\n",
@@ -323,7 +325,7 @@
 					"        return 5\n",
 					""
 				],
-				"execution_count": 66
+				"execution_count": 146
 			},
 			{
 				"cell_type": "markdown",
@@ -790,14 +792,14 @@
 					"ken_socio_pressures_df.sort_values(by='year', inplace=True)\n",
 					"#ken_socio_pressures_df = ken_socio_pressures_df.rename(columns={'domain_score': 'socio_pressure_score'})"
 				],
-				"execution_count": 78
+				"execution_count": 147
 			},
 			{
 				"cell_type": "code",
 				"source": [
 					"print(ken_socio_pressures_df)"
 				],
-				"execution_count": 79
+				"execution_count": 148
 			},
 			{
 				"cell_type": "markdown",
@@ -2040,6 +2042,123 @@
 					"print(expression_and_belief.head())"
 				],
 				"execution_count": 145
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Generate Index Files\n",
+					"\n",
+					"Explanation Here"
+				]
+			},
+			{
+				"cell_type": "code",
+				"source": [
+					"country_isos = african_countries['iso3']\n",
+					"year = \"2025\"\n",
+					"\n",
+					"\"\"\"\n",
+					"Social Cohesion Domain Score Dataframes\n",
+					"\"\"\"\n",
+					"#Domain Index Dictionaries\n",
+					"socio_pressure_dfs = {\n",
+					"    'environmental_adaptation': environmental_adaptation, \n",
+					"    'youth_underdevelopment': youth_underdevelopment, \n",
+					"    'illiteracy': illiteracy, \n",
+					"    'human_flight': human_flight, \n",
+					"    'demographic_pressure': demographic_pressure\n",
+					"    }\n",
+					"\n",
+					"group_grievance_dfs = {\n",
+					"    'inequality': inequality,\n",
+					"    'unemployment': unemployment,\n",
+					"    'group_grievance': group_grievance,\n",
+					"    'refugees': refugees,\n",
+					"    'infrastructure': infrastructure\n",
+					"}\n",
+					"\n",
+					"sociopolitical_unrest_dfs = {\n",
+					"    'armed_conflict': armed_conflict,\n",
+					"    'civilian_violence': civilian_violence,\n",
+					"    'crime_absence': crime_absence,\n",
+					"    'political_terror': political_terror,\n",
+					"    'violent_demonstrations_grouped': violent_demonstrations_grouped\n",
+					"}\n",
+					"\n",
+					"social_cohesion_dfs = (socio_pressure_dfs | group_grievance_dfs) | sociopolitical_unrest_dfs\n",
+					"\n",
+					"\n",
+					"\"\"\"\n",
+					"Governance Capacity Domain Score Dataframe\n",
+					"\"\"\"\n",
+					"\n",
+					"institutional_capacity_dfs =  {\n",
+					"    'func_exec': func_exec,\n",
+					"    'judicial_ind': judicial_ind,\n",
+					"    'law_enforcement':law_enforcement,\n",
+					"'electoral_process': electoral_process\n",
+					"}\n",
+					"\n",
+					"government_effectiveness_dfs = {\n",
+					"    'public_service': public_service,\n",
+					"    'corruption_perception': corruption_perception,\n",
+					"    'external_intervention': external_intervention,\n",
+					"    'order_and_security': order_and_security\n",
+					"}\n",
+					"\n",
+					"political_rights_dfs = {\n",
+					"    'political_pluralism': political_pluralism,\n",
+					"    'association_organization': association_organization,\n",
+					"    'expression_and_belief': expression_and_belief\n",
+					"}\n",
+					"\n",
+					"governance_capacity_dfs = (institutional_capacity_dfs | government_effectiveness_dfs) | political_rights_dfs\n",
+					"\n",
+					"for iso in country_isos:\n",
+					"    try:\n",
+					"        social_cohesion_df = create_domain_index(iso, social_cohesion_dfs)\n",
+					"        governance_capacity_df = create_domain_index(iso, governance_capacity_dfs)\n",
+					"\n",
+					"        # Skip if either DataFrame is empty\n",
+					"        if social_cohesion_df.empty or governance_capacity_df.empty:\n",
+					"            print(f\"Skipping {iso} due to empty DataFrame(s).\")\n",
+					"            continue\n",
+					"\n",
+					"        social_cohesion_df.rename(columns={'domain_score':'social_cohesion_score'}, inplace=True)\n",
+					"        governance_capacity_df.rename(columns={'domain_score':'governance_capacity_score'}, inplace=True)\n",
+					"\n",
+					"        cis_df = pd.merge(social_cohesion_df, governance_capacity_df, on=['iso3', 'name', 'year'])\n",
+					"\n",
+					"        # Skip if merged DataFrame is empty\n",
+					"        if cis_df.empty:\n",
+					"            print(f\"Skipping {iso} due to empty merged DataFrame.\")\n",
+					"            continue\n",
+					"\n",
+					"        cis_df['cis_score'] = (cis_df['social_cohesion_score'] + cis_df['governance_capacity_score']) / 2\n",
+					"        write_path = f'abfss://acj802@ac2synapsedatalabstorage.dfs.core.windows.net/AFRICOM_Instability_Index/country_cis_data/{iso}_{year}/'\n",
+					"        cis_spark = spark.createDataFrame(cis_df)\n",
+					"        cis_spark.coalesce(1) \\\n",
+					"            .write \\\n",
+					"            .mode('overwrite') \\\n",
+					"            .options(header='True', delimiter=',') \\\n",
+					"            .csv(path=write_path)\n",
+					"\n",
+					"    except Exception as e:\n",
+					"        print(f\"Skipping {iso} due to error: {e}\")\n",
+					"        continue\n",
+					"\n",
+					"\n",
+					"\n",
+					""
+				],
+				"execution_count": 166
 			},
 			{
 				"cell_type": "markdown",
